@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36623.8 d17.14
+VisualStudioVersion = 17.14.36623.8
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComicReaderUWPPlugins", "ComicReaderUWPPlugins\ComicReaderUWPPlugins.csproj", "{FE7A1BE9-8107-4C1E-A676-EAEAF4E16FE4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SamplePlugin", "SamplePlugin\SamplePlugin.csproj", "{FE7A1BE9-8107-4C1E-A676-EAEAF4E16FE4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoScore", "AutoScore\AutoScore.csproj", "{6583CA10-50BE-4161-94E4-E5D636883F55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{FE7A1BE9-8107-4C1E-A676-EAEAF4E16FE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FE7A1BE9-8107-4C1E-A676-EAEAF4E16FE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FE7A1BE9-8107-4C1E-A676-EAEAF4E16FE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6583CA10-50BE-4161-94E4-E5D636883F55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6583CA10-50BE-4161-94E4-E5D636883F55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6583CA10-50BE-4161-94E4-E5D636883F55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6583CA10-50BE-4161-94E4-E5D636883F55}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
