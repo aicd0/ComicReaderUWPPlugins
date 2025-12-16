@@ -8,7 +8,7 @@ using ComicReader.SDK.Plugins;
 
 namespace AutoScore;
 
-public partial class AutoScorePlugin : IPlugin, IBeforeComicUpdatingHandler
+public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
 {
     private const string TAG = nameof(AutoScorePlugin);
 
@@ -16,10 +16,10 @@ public partial class AutoScorePlugin : IPlugin, IBeforeComicUpdatingHandler
 
     public void Initialize(IPluginContext context)
     {
-        context.RegisterBeforeComicUpdatingHandler(this);
+        context.RegisterComicEditedHandler(this);
     }
 
-    public void OnComicUpdating(IComicModel comic)
+    public void ComicEdited(IComicModel comic)
     {
         UpdateScore(comic);
     }
