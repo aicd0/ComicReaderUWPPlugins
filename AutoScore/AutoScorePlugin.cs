@@ -5,6 +5,7 @@ using System;
 using System.IO;
 
 using ComicReader.SDK.Plugins;
+using ComicReader.SDK.Plugins.Comic;
 
 namespace AutoScore;
 
@@ -21,22 +22,31 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
 
     public void ComicEdited(IComicModel comic)
     {
-        UpdateScore(comic);
+        int score = CalculateScore(comic);
+        comic.SetRating(score);
+        if (score >= 0)
+        {
+            comic.SetCompletionStatus(CompletionStatusEnum.Completed);
+        }
+        else
+        {
+            comic.SetCompletionStatus(CompletionStatusEnum.NotStarted);
+        }
     }
 
-    private static void UpdateScore(IComicModel comic)
+    private static int CalculateScore(IComicModel comic)
     {
         string description = comic.Description.Trim();
         string? firstLine = GetFirstLine(description);
         if (string.IsNullOrEmpty(firstLine))
         {
-            return;
+            return -1;
         }
 
         string[] pieces = firstLine.Split('/');
         if (pieces.Length < 3)
         {
-            return;
+            return -1;
         }
 
         string graphicScoreStr = pieces[0];
@@ -45,36 +55,30 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
         string missingPagesStr = pieces.Length >= 4 ? pieces[3] : "0";
         if (pieces.Length > 4)
         {
-            return;
+            return -1;
         }
 
         if (!int.TryParse(graphicScoreStr, out int graphicScore) || graphicScore <= 0 || graphicScore > 5)
         {
-            return;
+            return -1;
         }
 
         if (!int.TryParse(scriptScoreStr, out int scriptScore) || scriptScore <= 0 || scriptScore > 5)
         {
-            return;
+            return -1;
         }
 
         if (!int.TryParse(biasPercentageStr, out int biasPercentage) || biasPercentage < 0 || biasPercentage > 100)
         {
-            return;
+            return -1;
         }
 
         if (!int.TryParse(missingPagesStr, out int missingPages) || missingPages < 0)
         {
-            return;
+            return -1;
         }
 
-        int score = CalculateScore(graphicScore, scriptScore, biasPercentage, missingPages);
-        if (score == comic.Rating)
-        {
-            return;
-        }
-
-        comic.SetRating(score);
+        return CalculateScore(graphicScore, scriptScore, biasPercentage, missingPages);
     }
 
     private static int CalculateScore(int graphicScore, int scriptScore, int biasPercentage, int missingPages)
@@ -85,102 +89,102 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
         {
             case 11:
                 minBound = 0;
-                maxBound = 20;
+                maxBound = 0;
                 break;
             case 12:
                 minBound = 0;
-                maxBound = 25;
+                maxBound = 0;
                 break;
             case 13:
                 minBound = 0;
-                maxBound = 30;
+                maxBound = 5;
                 break;
             case 14:
-                minBound = 10;
-                maxBound = 35;
+                minBound = 5;
+                maxBound = 20;
                 break;
             case 15:
                 minBound = 20;
                 maxBound = 40;
                 break;
             case 21:
-                minBound = 20;
-                maxBound = 40;
+                minBound = 0;
+                maxBound = 0;
                 break;
             case 22:
-                minBound = 25;
-                maxBound = 45;
+                minBound = 0;
+                maxBound = 10;
                 break;
             case 23:
-                minBound = 30;
-                maxBound = 50;
+                minBound = 10;
+                maxBound = 25;
                 break;
             case 24:
-                minBound = 35;
-                maxBound = 55;
+                minBound = 25;
+                maxBound = 40;
                 break;
             case 25:
                 minBound = 40;
                 maxBound = 60;
                 break;
             case 31:
-                minBound = 40;
-                maxBound = 50;
+                minBound = 0;
+                maxBound = 15;
                 break;
             case 32:
+                minBound = 15;
+                maxBound = 30;
+                break;
+            case 33:
+                minBound = 30;
+                maxBound = 45;
+                break;
+            case 34:
                 minBound = 45;
                 maxBound = 60;
                 break;
-            case 33:
-                minBound = 50;
-                maxBound = 70;
-                break;
-            case 34:
-                minBound = 55;
-                maxBound = 75;
-                break;
             case 35:
                 minBound = 60;
-                maxBound = 80;
+                maxBound = 75;
                 break;
             case 41:
-                minBound = 50;
-                maxBound = 60;
+                minBound = 20;
+                maxBound = 35;
                 break;
             case 42:
-                minBound = 60;
-                maxBound = 70;
+                minBound = 35;
+                maxBound = 50;
                 break;
             case 43:
-                minBound = 70;
-                maxBound = 80;
+                minBound = 50;
+                maxBound = 65;
                 break;
             case 44:
+                minBound = 65;
+                maxBound = 75;
+                break;
+            case 45:
                 minBound = 75;
                 maxBound = 90;
                 break;
-            case 45:
-                minBound = 80;
-                maxBound = 95;
-                break;
             case 51:
-                minBound = 60;
-                maxBound = 70;
+                minBound = 40;
+                maxBound = 55;
                 break;
             case 52:
+                minBound = 55;
+                maxBound = 70;
+                break;
+            case 53:
                 minBound = 70;
                 maxBound = 80;
                 break;
-            case 53:
+            case 54:
                 minBound = 80;
                 maxBound = 90;
                 break;
-            case 54:
-                minBound = 90;
-                maxBound = 95;
-                break;
             case 55:
-                minBound = 95;
+                minBound = 90;
                 maxBound = 100;
                 break;
             default:
