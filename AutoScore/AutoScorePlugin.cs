@@ -2,39 +2,148 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
+using ComicReader.SDK.Common.Utils;
 using ComicReader.SDK.Plugins;
 using ComicReader.SDK.Plugins.Comic;
+using ComicReader.SDK.Plugins.Menu;
 
 namespace AutoScore;
 
 public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
 {
     private const string TAG = nameof(AutoScorePlugin);
+    private const string LIB_MAIN = "Main";
+    private const string KEY_MIN_SCORE = "MinScore";
+    private const string KEY_MAX_SCORE = "MaxScore";
 
     public string Name => TAG;
 
+    private IPluginContext? _context;
+    private IPluginContext Context => _context ?? throw new InvalidOperationException("Plugin not initialized.");
+
     public void Initialize(IPluginContext context)
     {
-        context.RegisterComicEditedHandler(this);
+        _context = context;
+
+        Context.RegisterComicEditedHandler(this);
+
+        Context.RegisterMainPageMoreMenuItem(new SubItemMenuItem()
+        {
+            Text = "Auto score",
+            Items = [
+                new SimpleMenuItem()
+                {
+                    Text = "Update all ratings",
+                    Click = () => CoroutineUtils.Start(UpdateAllRatings),
+                }
+            ],
+        });
     }
 
     public void ComicEdited(IComicModel comic)
     {
-        int score = CalculateScore(comic);
-        comic.SetRating(score);
-        if (score >= 0)
+        int maxScore = (int)Context.GetKVDatabase().GetLong(LIB_MAIN, KEY_MAX_SCORE, -1);
+        int minScore = (int)Context.GetKVDatabase().GetLong(LIB_MAIN, KEY_MIN_SCORE, -1);
+        CoroutineUtils.Start(() => UpdateRating(comic, minScore, maxScore));
+    }
+
+    private async Task UpdateAllRatings()
+    {
+        IEnumerable<long> comicIds = await Context.SearchComics("%tag.\"Type\" = Manga");
+
+        int minScore = -1;
+        int maxScore = -1;
+        foreach (long comicId in comicIds)
         {
-            comic.SetCompletionStatus(CompletionStatusEnum.Completed);
+            IComicModel? comic = await Context.GetComicById(comicId);
+            if (comic is null)
+            {
+                continue;
+            }
+
+            int score = CalculateAbsoluteScore(comic);
+            if (score < 0)
+            {
+                continue;
+            }
+
+            if (maxScore < 0 || minScore < 0)
+            {
+                minScore = score;
+                maxScore = score;
+            }
+            else
+            {
+                minScore = Math.Min(minScore, score);
+                maxScore = Math.Max(maxScore, score);
+            }
         }
-        else
+
+        Context.GetKVDatabase().SetLong(LIB_MAIN, KEY_MIN_SCORE, minScore);
+        Context.GetKVDatabase().SetLong(LIB_MAIN, KEY_MAX_SCORE, maxScore);
+
+        foreach (long comicId in comicIds)
         {
-            comic.SetCompletionStatus(CompletionStatusEnum.NotStarted);
+            IComicModel? comic = await Context.GetComicById(comicId);
+            if (comic is null)
+            {
+                continue;
+            }
+
+            await UpdateRating(comic, minScore, maxScore);
         }
     }
 
-    private static int CalculateScore(IComicModel comic)
+    private async Task UpdateRating(IComicModel comic, int minScore, int maxScore)
+    {
+        int score = CalculateAbsoluteScore(comic);
+        if (score < 0)
+        {
+            await comic.SetRating(-1);
+            await comic.SetCompletionStatus(CompletionStatusEnum.NotStarted);
+            return;
+        }
+
+        if (minScore < 0 || score < minScore)
+        {
+            minScore = score;
+            Context.GetKVDatabase().SetLong(LIB_MAIN, KEY_MIN_SCORE, minScore);
+        }
+
+        if (maxScore < 0 || score > maxScore)
+        {
+            maxScore = score;
+            Context.GetKVDatabase().SetLong(LIB_MAIN, KEY_MAX_SCORE, maxScore);
+        }
+
+        score = CalculateRelativeScore(score, minScore, maxScore);
+        await comic.SetRating(score);
+        await comic.SetCompletionStatus(CompletionStatusEnum.Completed);
+    }
+
+    private static int CalculateRelativeScore(int absoluteScore, int minScore, int maxScore)
+    {
+        if (absoluteScore < minScore)
+        {
+            return 0;
+        }
+
+        if (absoluteScore > maxScore)
+        {
+            return 100;
+        }
+
+        float scoreFloat = (absoluteScore - minScore) * 100F / (maxScore - minScore);
+        int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
+        score = Math.Clamp(score, 0, 100);
+        return score;
+    }
+
+    private static int CalculateAbsoluteScore(IComicModel comic)
     {
         string description = comic.Description.Trim();
         string? firstLine = GetFirstLine(description);
@@ -44,159 +153,38 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
         }
 
         string[] pieces = firstLine.Split('/');
-        if (pieces.Length < 3)
+        if (pieces.Length != 3)
         {
             return -1;
         }
 
         string graphicScoreStr = pieces[0];
         string scriptScoreStr = pieces[1];
-        string biasPercentageStr = pieces[2];
-        string missingPagesStr = pieces.Length >= 4 ? pieces[3] : "0";
-        if (pieces.Length > 4)
+        string missingPagesStr = pieces[2];
+
+        if (!float.TryParse(graphicScoreStr, out float graphicScore) || graphicScore < 0F || graphicScore > 5F)
         {
             return -1;
         }
 
-        if (!int.TryParse(graphicScoreStr, out int graphicScore) || graphicScore <= 0 || graphicScore > 5)
+        if (!float.TryParse(scriptScoreStr, out float scriptScore) || scriptScore < 0F || scriptScore > 5F)
         {
             return -1;
         }
 
-        if (!int.TryParse(scriptScoreStr, out int scriptScore) || scriptScore <= 0 || scriptScore > 5)
+        if (!int.TryParse(missingPagesStr, out int missingPages) || missingPages < 0 || missingPages > 10)
         {
             return -1;
         }
 
-        if (!int.TryParse(biasPercentageStr, out int biasPercentage) || biasPercentage < 0 || biasPercentage > 100)
-        {
-            return -1;
-        }
-
-        if (!int.TryParse(missingPagesStr, out int missingPages) || missingPages < 0)
-        {
-            return -1;
-        }
-
-        return CalculateScore(graphicScore, scriptScore, biasPercentage, missingPages);
+        return CalculateAbsoluteScore(graphicScore, scriptScore, missingPages);
     }
 
-    private static int CalculateScore(int graphicScore, int scriptScore, int biasPercentage, int missingPages)
+    private static int CalculateAbsoluteScore(float graphicScore, float scriptScore, int missingPages)
     {
-        int minBound;
-        int maxBound;
-        switch (graphicScore * 10 + scriptScore)
-        {
-            case 11:
-                minBound = 0;
-                maxBound = 0;
-                break;
-            case 12:
-                minBound = 0;
-                maxBound = 0;
-                break;
-            case 13:
-                minBound = 0;
-                maxBound = 5;
-                break;
-            case 14:
-                minBound = 5;
-                maxBound = 20;
-                break;
-            case 15:
-                minBound = 20;
-                maxBound = 40;
-                break;
-            case 21:
-                minBound = 0;
-                maxBound = 0;
-                break;
-            case 22:
-                minBound = 0;
-                maxBound = 10;
-                break;
-            case 23:
-                minBound = 10;
-                maxBound = 25;
-                break;
-            case 24:
-                minBound = 25;
-                maxBound = 40;
-                break;
-            case 25:
-                minBound = 40;
-                maxBound = 60;
-                break;
-            case 31:
-                minBound = 0;
-                maxBound = 15;
-                break;
-            case 32:
-                minBound = 15;
-                maxBound = 30;
-                break;
-            case 33:
-                minBound = 30;
-                maxBound = 45;
-                break;
-            case 34:
-                minBound = 45;
-                maxBound = 60;
-                break;
-            case 35:
-                minBound = 60;
-                maxBound = 75;
-                break;
-            case 41:
-                minBound = 20;
-                maxBound = 35;
-                break;
-            case 42:
-                minBound = 35;
-                maxBound = 50;
-                break;
-            case 43:
-                minBound = 50;
-                maxBound = 65;
-                break;
-            case 44:
-                minBound = 65;
-                maxBound = 75;
-                break;
-            case 45:
-                minBound = 75;
-                maxBound = 90;
-                break;
-            case 51:
-                minBound = 40;
-                maxBound = 55;
-                break;
-            case 52:
-                minBound = 55;
-                maxBound = 70;
-                break;
-            case 53:
-                minBound = 70;
-                maxBound = 80;
-                break;
-            case 54:
-                minBound = 80;
-                maxBound = 90;
-                break;
-            case 55:
-                minBound = 90;
-                maxBound = 100;
-                break;
-            default:
-                throw new System.Exception();
-        }
-
-        float scoreFloat = minBound + (maxBound - minBound) * (float)biasPercentage / 100F;
+        float scoreFloat = (graphicScore * 120F + scriptScore * 100F) * (1F - 0.04F * Math.Abs(graphicScore - scriptScore)) - 50 * missingPages;
         int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
-        score = Math.Clamp(score, 0, 100);
-        score -= missingPages * 5;
-        score = Math.Clamp(score, 0, 100);
-        return score;
+        return Math.Max(score, 0);
     }
 
     private static string? GetFirstLine(string text)
