@@ -66,7 +66,7 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
             }
 
             int score = CalculateAbsoluteScore(comic);
-            if (score < 0)
+            if (score <= 0)
             {
                 continue;
             }
@@ -101,10 +101,10 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
     private async Task UpdateRating(IComicModel comic, int minScore, int maxScore)
     {
         int score = CalculateAbsoluteScore(comic);
-        if (score < 0)
+        if (score <= 0)
         {
             await comic.SetRating(-1);
-            await comic.SetCompletionStatus(CompletionStatusEnum.NotStarted);
+            await comic.SetCompletionStatus(score == 0 ? CompletionStatusEnum.Completed : CompletionStatusEnum.NotStarted);
             return;
         }
 
