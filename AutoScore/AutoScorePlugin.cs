@@ -95,21 +95,28 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
 
 Grphic score/Script score/Missing pages
 
+9 Impressive
+8 Excellent
+6 Good
+4 Fair
+2 Poor
+0 Terrible
+
 Graphic (0-5):
--1.0 Storyboard
--1.0 Character design
--1.0 Body proportions
--1.0 Consistency
--1.0 Facial expressions
-+1.0 Art style
+Storyboard
+Character design
+Body proportions
+Facial expressions
+Details
+Art style
 
 Script (0-5):
--1.0 Plot
--1.0 Pacing
--1.0 Dialogue
--1.0 Character development
--1.0 Originality
-+1.0 Themes
+Plot
+Pacing
+Dialogue
+Character development
+Originality
+Themes
 ");
         text = GetFirstLine(text);
         await comic.SetDescription(ReplaceFirstLine(comic.Description, text));
