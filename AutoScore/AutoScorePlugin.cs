@@ -37,13 +37,13 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
                 return _minScore.Value;
             }
 
-            _minScore = (int)Context.GetKVDatabase().GetLong(LIB_MAIN, KEY_MIN_SCORE, -1);
+            _minScore = Context.GetKVDatabase().GetCollection(LIB_MAIN).GetValueOrDefault(KEY_MIN_SCORE, -1);
             return _minScore.Value;
         }
         set
         {
             _minScore = value;
-            Context.GetKVDatabase().SetLong(LIB_MAIN, KEY_MIN_SCORE, value);
+            Context.GetKVDatabase().GetCollection(LIB_MAIN).Set(KEY_MIN_SCORE, value);
         }
     }
 
@@ -57,13 +57,13 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
                 return _maxScore.Value;
             }
 
-            _maxScore = (int)Context.GetKVDatabase().GetLong(LIB_MAIN, KEY_MAX_SCORE, -1);
+            _maxScore = (int)Context.GetKVDatabase().GetCollection(LIB_MAIN).GetValueOrDefault(KEY_MAX_SCORE, -1);
             return _maxScore.Value;
         }
         set
         {
             _maxScore = value;
-            Context.GetKVDatabase().SetLong(LIB_MAIN, KEY_MAX_SCORE, value);
+            Context.GetKVDatabase().GetCollection(LIB_MAIN).Set(KEY_MAX_SCORE, value);
         }
     }
 
