@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using ComicReader.SDK.Common.Utils;
@@ -17,12 +19,11 @@ namespace AutoScore;
 
 public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
 {
-    private const string TAG = nameof(AutoScorePlugin);
     private const string LIB_MAIN = "Main";
     private const string KEY_MIN_SCORE = "MinScore";
     private const string KEY_MAX_SCORE = "MaxScore";
 
-    public string Name => TAG;
+    public string Name => "AutoScore";
 
     private IPluginContext? _context;
     private IPluginContext Context => _context ?? throw new InvalidOperationException("Plugin not initialized.");
@@ -57,7 +58,7 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
                 return _maxScore.Value;
             }
 
-            _maxScore = (int)Context.GetKVDatabase().GetCollection(LIB_MAIN).GetValueOrDefault(KEY_MAX_SCORE, -1);
+            _maxScore = Context.GetKVDatabase().GetCollection(LIB_MAIN).GetValueOrDefault(KEY_MAX_SCORE, -1);
             return _maxScore.Value;
         }
         set
@@ -82,44 +83,88 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
 
     private async Task EditComicScore(IComicModel comic)
     {
+        if (!IsTargetComic(comic))
+        {
+            return;
+        }
+
         ScoreModel scoreModel = GetComicScoreModel(comic) ?? new()
         {
             GrphicScore = 0F,
             ScriptScore = 0F,
             MissingPages = 0,
         };
-        string graphicScoreStr = Math.Round(scoreModel.GrphicScore, 2, MidpointRounding.AwayFromZero).ToString("0.##");
-        string scriptScoreStr = Math.Round(scoreModel.ScriptScore, 2, MidpointRounding.AwayFromZero).ToString("0.##");
-        string missingPagesStr = scoreModel.MissingPages.ToString();
-        string text = await GetTextFromNotepadAsync($@"{graphicScoreStr}/{scriptScoreStr}/{missingPagesStr}
+        string input = await GetTextFromNotepadAsync($@"Editing score for ""{comic.Title1}""...
 
-Grphic score/Script score/Missing pages
+Impressive 9
+ Excellent 8
+      Good 6
+      Fair 4
+      Poor 2
+  Terrible 0
 
-9 Impressive
-8 Excellent
-6 Good
-4 Fair
-2 Poor
-0 Terrible
+#### Graphic ####
+           Storyboard: 
+     Character design: 
+     Body proportions: 
+   Facial expressions: 
+              Details: 
+            Art style: 
 
-Graphic (0-5):
-Storyboard
-Character design
-Body proportions
-Facial expressions
-Details
-Art style
+#### Script ####
+                 Plot: 
+               Pacing: 
+             Dialogue: 
+Character development: 
+          Originality: 
+               Themes: 
 
-Script (0-5):
-Plot
-Pacing
-Dialogue
-Character development
-Originality
-Themes
+#### Others ####
+        Missing pages: {scoreModel.MissingPages}
 ");
-        text = GetFirstLine(text);
-        await comic.SetDescription(ReplaceFirstLine(comic.Description, text));
+
+        List<string> scoreStrings = [];
+        MatchCollection matches = Regex.Matches(input, @":([^\r\n]*)");
+        foreach (Match match in matches)
+        {
+            scoreStrings.Add(match.Groups[1].Value.Trim());
+        }
+
+        if (scoreStrings.Count != 13)
+        {
+            return;
+        }
+
+        int graphicScoreTotal = 0;
+        int scriptScoreTotal = 0;
+        int missingPages;
+        try
+        {
+            graphicScoreTotal += int.Parse(scoreStrings[0]);
+            graphicScoreTotal += int.Parse(scoreStrings[1]);
+            graphicScoreTotal += int.Parse(scoreStrings[2]);
+            graphicScoreTotal += int.Parse(scoreStrings[3]);
+            graphicScoreTotal += int.Parse(scoreStrings[4]);
+            graphicScoreTotal += int.Parse(scoreStrings[5]);
+            scriptScoreTotal += int.Parse(scoreStrings[6]);
+            scriptScoreTotal += int.Parse(scoreStrings[7]);
+            scriptScoreTotal += int.Parse(scoreStrings[8]);
+            scriptScoreTotal += int.Parse(scoreStrings[9]);
+            scriptScoreTotal += int.Parse(scoreStrings[10]);
+            scriptScoreTotal += int.Parse(scoreStrings[11]);
+            missingPages = int.Parse(scoreStrings[12]);
+        }
+        catch (Exception)
+        {
+            return;
+        }
+
+        graphicScoreTotal = Math.Clamp(graphicScoreTotal, 0, 50);
+        scriptScoreTotal = Math.Clamp(scriptScoreTotal, 0, 50);
+        missingPages = Math.Clamp(missingPages, 0, 10);
+        string graphicScore = Math.Round(graphicScoreTotal / 10F, 1, MidpointRounding.AwayFromZero).ToString("0.#");
+        string scriptScore = Math.Round(scriptScoreTotal / 10F, 1, MidpointRounding.AwayFromZero).ToString("0.#");
+        await comic.SetDescription(ReplaceFirstLine(comic.Description, $"{graphicScore}/{scriptScore}/{missingPages}"));
         await UpdateRating(comic);
     }
 
@@ -178,6 +223,11 @@ Themes
 
     private async Task UpdateRating(IComicModel comic)
     {
+        if (!IsTargetComic(comic))
+        {
+            return;
+        }
+
         ScoreModel? scoreModel = GetComicScoreModel(comic);
         if (scoreModel is null)
         {
@@ -209,32 +259,9 @@ Themes
         await comic.SetCompletionStatus(CompletionStatusEnum.Completed);
     }
 
-    private static int CalculateRelativeScore(int absoluteScore, int minScore, int maxScore)
+    private static bool IsTargetComic(IComicModel comic)
     {
-        if (absoluteScore < minScore)
-        {
-            return 0;
-        }
-
-        if (absoluteScore > maxScore)
-        {
-            return 100;
-        }
-
-        float scoreFloat = (absoluteScore - minScore) * 100F / (maxScore - minScore);
-        int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
-        score = Math.Clamp(score, 0, 100);
-        return score;
-    }
-
-    private static int CalculateAbsoluteScore(ScoreModel scoreModel)
-    {
-        float graphicScore = scoreModel.GrphicScore;
-        float scriptScore = scoreModel.ScriptScore;
-        int missingPages = scoreModel.MissingPages;
-        float scoreFloat = (graphicScore * 120F + scriptScore * 100F) * (1F - 0.04F * Math.Abs(graphicScore - scriptScore)) - 50 * missingPages;
-        int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
-        return Math.Max(score, 0);
+        return comic.Tags.FirstOrDefault(x => x.Name == "Type")?.Tags.Contains("Manga") ?? false;
     }
 
     private static ScoreModel? GetComicScoreModel(IComicModel comic)
@@ -279,6 +306,38 @@ Themes
         };
     }
 
+    private static int CalculateRelativeScore(int absoluteScore, int minScore, int maxScore)
+    {
+        if (absoluteScore < minScore)
+        {
+            return 0;
+        }
+
+        if (absoluteScore > maxScore)
+        {
+            return 100;
+        }
+
+        float scoreFloat = (absoluteScore - minScore) * 100F / (maxScore - minScore);
+        int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
+        score = Math.Clamp(score, 0, 100);
+        return score;
+    }
+
+    private static int CalculateAbsoluteScore(ScoreModel scoreModel)
+    {
+        float graphicScore = scoreModel.GrphicScore;
+        float scriptScore = scoreModel.ScriptScore;
+        int missingPages = scoreModel.MissingPages;
+        float scoreFloat = (graphicScore * 120F + scriptScore * 100F) * (1F - 0.04F * Math.Abs(graphicScore - scriptScore)) - 50 * missingPages;
+        int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
+        return Math.Max(score, 0);
+    }
+
+    //
+    // Helpers
+    //
+
     private static string GetFirstLine(string text)
     {
         if (string.IsNullOrEmpty(text))
@@ -312,6 +371,10 @@ Themes
         return text;
     }
 
+    //
+    // Types
+    //
+
     private class ScoreModel
     {
         public float GrphicScore { get; init; }
@@ -327,7 +390,7 @@ Themes
                 new SimpleMenuItem()
                 {
                     Text = "Update scores",
-                    Click = () => CoroutineUtils.Start(plugin.UpdateAllRatings),
+                    Click = () => CoroutineUtils.Start(() => plugin.Context.WithBusyState(plugin.UpdateAllRatings)),
                 }
             ];
         }
