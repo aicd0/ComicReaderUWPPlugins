@@ -25,6 +25,12 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
 
     public string Name => "AutoScore";
 
+    public string Publisher => "aicd0";
+
+    public int MajorVersion => 1;
+
+    public int MinorVersion => 0;
+
     private IPluginContext? _context;
     private IPluginContext Context => _context ?? throw new InvalidOperationException("Plugin not initialized.");
 

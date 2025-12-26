@@ -10,7 +10,13 @@ public class SamplePlugin : IPlugin
 {
     private const string TAG = nameof(SamplePlugin);
 
-    public string Name => TAG;
+    public string Name => "SamplePlugin";
+
+    public string Publisher => "aicd0";
+
+    public int MajorVersion => 1;
+
+    public int MinorVersion => 0;
 
     public void Initialize(IPluginContext context)
     {
