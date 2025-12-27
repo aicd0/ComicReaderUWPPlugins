@@ -29,7 +29,7 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
 
     public int MajorVersion => 1;
 
-    public int MinorVersion => 0;
+    public int MinorVersion => 1;
 
     private IPluginContext? _context;
     private IPluginContext Context => _context ?? throw new InvalidOperationException("Plugin not initialized.");
@@ -335,7 +335,9 @@ Character development:
         float graphicScore = scoreModel.GrphicScore;
         float scriptScore = scoreModel.ScriptScore;
         int missingPages = scoreModel.MissingPages;
-        float scoreFloat = (graphicScore * 120F + scriptScore * 100F) * (1F - 0.04F * Math.Abs(graphicScore - scriptScore)) - 50 * missingPages;
+        float scoreFloat = graphicScore * 120F + scriptScore * 100F;
+        scoreFloat *= 1F - 0.04F * Math.Abs(graphicScore - scriptScore);
+        scoreFloat *= 1F - 0.05F * missingPages;
         int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
         return Math.Max(score, 0);
     }
