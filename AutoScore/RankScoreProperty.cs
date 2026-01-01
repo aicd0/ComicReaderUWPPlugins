@@ -56,7 +56,8 @@ internal class RankScoreProperty : IVirtualProperty<IComicModel>
             }
 
             lastRating = item.Rating;
-            double score = 1000.0 * Math.Pow(rank, -0.3);
+            double rankRatio = (double)(rank - 1) / sorted.Count;
+            double score = 1000.0 * Math.Pow(2.0, -10.0 * rankRatio);
             _comicInfoMap[item] = new()
             {
                 Score = score,
