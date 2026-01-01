@@ -29,7 +29,7 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
 
     public int MajorVersion => 1;
 
-    public int MinorVersion => 1;
+    public int MinorVersion => 2;
 
     private IPluginContext? _context;
     private IPluginContext Context => _context ?? throw new InvalidOperationException("Plugin not initialized.");
@@ -80,6 +80,7 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
         Context.SetComicEditedHandler(this);
         Context.SetMainPageMoreMenuItemCreator(new MainPageMoreMenuItemCreator(this));
         Context.SetComicMenuItemCreator(new ComicMoreMenuItemCreator(this));
+        Context.RegisterComicVirtualProperty(new RankScoreProperty());
     }
 
     public void ComicEdited(IComicModel comic)
