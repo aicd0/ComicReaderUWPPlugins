@@ -3,11 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 using ComicReader.SDK.Common.Utils;
 using ComicReader.SDK.Plugins;
@@ -19,9 +14,8 @@ namespace AutoScore;
 
 public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
 {
-    private const string LIB_MAIN = "Main";
-    private const string KEY_MIN_SCORE = "MinScore";
-    private const string KEY_MAX_SCORE = "MaxScore";
+    private static AutoScorePlugin? _instance = null;
+    public static AutoScorePlugin Instance => _instance ?? throw new InvalidOperationException("Plugin not initialized.");
 
     public string Name => "AutoScore";
 
@@ -32,50 +26,13 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
     public int MinorVersion => 2;
 
     private IPluginContext? _context;
-    private IPluginContext Context => _context ?? throw new InvalidOperationException("Plugin not initialized.");
+    public IPluginContext Context => _context ?? throw new InvalidOperationException("Plugin not initialized.");
 
-    private int? _minScore = null;
-    private int MinScore
-    {
-        get
-        {
-            if (_minScore.HasValue)
-            {
-                return _minScore.Value;
-            }
-
-            _minScore = Context.GetKVDatabase().GetCollection(LIB_MAIN).GetValueOrDefault(KEY_MIN_SCORE, -1);
-            return _minScore.Value;
-        }
-        set
-        {
-            _minScore = value;
-            Context.GetKVDatabase().GetCollection(LIB_MAIN).Set(KEY_MIN_SCORE, value);
-        }
-    }
-
-    private int? _maxScore = null;
-    private int MaxScore
-    {
-        get
-        {
-            if (_maxScore.HasValue)
-            {
-                return _maxScore.Value;
-            }
-
-            _maxScore = Context.GetKVDatabase().GetCollection(LIB_MAIN).GetValueOrDefault(KEY_MAX_SCORE, -1);
-            return _maxScore.Value;
-        }
-        set
-        {
-            _maxScore = value;
-            Context.GetKVDatabase().GetCollection(LIB_MAIN).Set(KEY_MAX_SCORE, value);
-        }
-    }
+    private readonly AutoScoreCore _core = new();
 
     public void Initialize(IPluginContext context)
     {
+        _instance = this;
         _context = context;
         Context.SetComicEditedHandler(this);
         Context.SetMainPageMoreMenuItemCreator(new MainPageMoreMenuItemCreator(this));
@@ -85,321 +42,30 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
 
     public void ComicEdited(IComicModel comic)
     {
-        CoroutineUtils.Start(() => UpdateRating(comic));
-    }
-
-    private async Task EditComicScore(IComicModel comic)
-    {
-        if (!IsTargetComic(comic))
-        {
-            return;
-        }
-
-        ScoreModel scoreModel = GetComicScoreModel(comic) ?? new()
-        {
-            GrphicScore = 0F,
-            ScriptScore = 0F,
-            MissingPages = 0,
-        };
-        string input = await GetTextFromNotepadAsync($@"Editing score for ""{comic.Title1}""...
-
-Impressive 9
- Excellent 8
-      Good 6
-      Fair 4
-      Poor 2
-  Terrible 0
-
-#### Graphic ####
-           Storyboard: 
-     Character design: 
-     Body proportions: 
-   Facial expressions: 
-              Details: 
-            Art style: 
-
-#### Script ####
-                 Plot: 
-               Pacing: 
-             Dialogue: 
-Character development: 
-          Originality: 
-               Themes: 
-
-#### Others ####
-        Missing pages: {scoreModel.MissingPages}
-");
-
-        List<string> scoreStrings = [];
-        MatchCollection matches = Regex.Matches(input, @":([^\r\n]*)");
-        foreach (Match match in matches)
-        {
-            scoreStrings.Add(match.Groups[1].Value.Trim());
-        }
-
-        if (scoreStrings.Count != 13)
-        {
-            return;
-        }
-
-        int graphicScoreTotal = 0;
-        int scriptScoreTotal = 0;
-        int missingPages;
-        try
-        {
-            graphicScoreTotal += int.Parse(scoreStrings[0]);
-            graphicScoreTotal += int.Parse(scoreStrings[1]);
-            graphicScoreTotal += int.Parse(scoreStrings[2]);
-            graphicScoreTotal += int.Parse(scoreStrings[3]);
-            graphicScoreTotal += int.Parse(scoreStrings[4]);
-            graphicScoreTotal += int.Parse(scoreStrings[5]);
-            scriptScoreTotal += int.Parse(scoreStrings[6]);
-            scriptScoreTotal += int.Parse(scoreStrings[7]);
-            scriptScoreTotal += int.Parse(scoreStrings[8]);
-            scriptScoreTotal += int.Parse(scoreStrings[9]);
-            scriptScoreTotal += int.Parse(scoreStrings[10]);
-            scriptScoreTotal += int.Parse(scoreStrings[11]);
-            missingPages = int.Parse(scoreStrings[12]);
-        }
-        catch (Exception)
-        {
-            return;
-        }
-
-        graphicScoreTotal = Math.Clamp(graphicScoreTotal, 0, 50);
-        scriptScoreTotal = Math.Clamp(scriptScoreTotal, 0, 50);
-        missingPages = Math.Clamp(missingPages, 0, 10);
-        string graphicScore = Math.Round(graphicScoreTotal / 10F, 1, MidpointRounding.AwayFromZero).ToString("0.#");
-        string scriptScore = Math.Round(scriptScoreTotal / 10F, 1, MidpointRounding.AwayFromZero).ToString("0.#");
-        await comic.SetDescription(ReplaceFirstLine(comic.Description, $"{graphicScore}/{scriptScore}/{missingPages}"));
-        await UpdateRating(comic);
-    }
-
-    private async Task UpdateAllRatings()
-    {
-        IEnumerable<long> comicIds = await Context.SearchComics("%tag.\"Type\" = Manga");
-
-        int minScore = -1;
-        int maxScore = -1;
-        foreach (long comicId in comicIds)
-        {
-            IComicModel? comic = await Context.GetComicById(comicId);
-            if (comic is null)
-            {
-                continue;
-            }
-
-            ScoreModel? scoreModel = GetComicScoreModel(comic);
-            if (scoreModel is null)
-            {
-                continue;
-            }
-
-            int score = CalculateAbsoluteScore(scoreModel);
-            if (score == 0)
-            {
-                continue;
-            }
-
-            if (maxScore < 0 || minScore < 0)
-            {
-                minScore = score;
-                maxScore = score;
-            }
-            else
-            {
-                minScore = Math.Min(minScore, score);
-                maxScore = Math.Max(maxScore, score);
-            }
-        }
-
-        MinScore = minScore;
-        MaxScore = maxScore;
-
-        foreach (long comicId in comicIds)
-        {
-            IComicModel? comic = await Context.GetComicById(comicId);
-            if (comic is null)
-            {
-                continue;
-            }
-
-            await UpdateRating(comic);
-        }
-    }
-
-    private async Task UpdateRating(IComicModel comic)
-    {
-        if (!IsTargetComic(comic))
-        {
-            return;
-        }
-
-        ScoreModel? scoreModel = GetComicScoreModel(comic);
-        if (scoreModel is null)
-        {
-            await comic.SetRating(-1);
-            await comic.SetCompletionStatus(CompletionStatusEnum.NotStarted);
-            return;
-        }
-
-        int score = CalculateAbsoluteScore(scoreModel);
-        if (score == 0)
-        {
-            await comic.SetRating(-1);
-            await comic.SetCompletionStatus(CompletionStatusEnum.Completed);
-            return;
-        }
-
-        if (MinScore < 0 || score < MinScore)
-        {
-            MinScore = score;
-        }
-
-        if (MaxScore < 0 || score > MaxScore)
-        {
-            MaxScore = score;
-        }
-
-        score = CalculateRelativeScore(score, MinScore, MaxScore);
-        await comic.SetRating(score);
-        await comic.SetCompletionStatus(CompletionStatusEnum.Completed);
-    }
-
-    private static bool IsTargetComic(IComicModel comic)
-    {
-        return comic.Tags.FirstOrDefault(x => x.Name == "Type")?.Tags.Contains("Manga") ?? false;
-    }
-
-    private static ScoreModel? GetComicScoreModel(IComicModel comic)
-    {
-        string description = comic.Description.Trim();
-        string firstLine = GetFirstLine(description);
-        if (string.IsNullOrEmpty(firstLine))
-        {
-            return null;
-        }
-
-        string[] pieces = firstLine.Split('/');
-        if (pieces.Length != 3)
-        {
-            return null;
-        }
-
-        string graphicScoreStr = pieces[0];
-        string scriptScoreStr = pieces[1];
-        string missingPagesStr = pieces[2];
-
-        if (!float.TryParse(graphicScoreStr, out float graphicScore) || graphicScore < 0F || graphicScore > 5F)
-        {
-            return null;
-        }
-
-        if (!float.TryParse(scriptScoreStr, out float scriptScore) || scriptScore < 0F || scriptScore > 5F)
-        {
-            return null;
-        }
-
-        if (!int.TryParse(missingPagesStr, out int missingPages) || missingPages < 0 || missingPages > 10)
-        {
-            return null;
-        }
-
-        return new ScoreModel
-        {
-            GrphicScore = graphicScore,
-            ScriptScore = scriptScore,
-            MissingPages = missingPages,
-        };
-    }
-
-    private static int CalculateRelativeScore(int absoluteScore, int minScore, int maxScore)
-    {
-        if (absoluteScore < minScore)
-        {
-            return 0;
-        }
-
-        if (absoluteScore > maxScore)
-        {
-            return 100;
-        }
-
-        float scoreFloat = (absoluteScore - minScore) * 100F / (maxScore - minScore);
-        int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
-        score = Math.Clamp(score, 0, 100);
-        return score;
-    }
-
-    private static int CalculateAbsoluteScore(ScoreModel scoreModel)
-    {
-        float graphicScore = scoreModel.GrphicScore;
-        float scriptScore = scoreModel.ScriptScore;
-        int missingPages = scoreModel.MissingPages;
-        float scoreFloat = graphicScore * 120F + scriptScore * 100F;
-        scoreFloat *= 1F - 0.04F * Math.Abs(graphicScore - scriptScore);
-        scoreFloat *= 1F - 0.05F * missingPages;
-        int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
-        return Math.Max(score, 0);
-    }
-
-    //
-    // Helpers
-    //
-
-    private static string GetFirstLine(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-        {
-            return text;
-        }
-
-        using StringReader reader = new(text);
-        return reader.ReadLine() ?? string.Empty;
-    }
-
-    private static string ReplaceFirstLine(string input, string newFirstLine)
-    {
-        if (string.IsNullOrEmpty(input))
-        {
-            return newFirstLine;
-        }
-
-        int index = input.IndexOfAny(['\r', '\n']);
-        return index == -1 ? newFirstLine : string.Concat(newFirstLine, input.AsSpan(index));
-    }
-
-    private static async Task<string> GetTextFromNotepadAsync(string initialText)
-    {
-        string tempFile = Path.GetTempFileName();
-        File.WriteAllText(tempFile, initialText);
-        var process = Process.Start("notepad.exe", tempFile);
-        await Task.Run(() => process.WaitForExit());
-        string text = File.ReadAllText(tempFile);
-        File.Delete(tempFile);
-        return text;
+        CoroutineUtils.Start(() => _core.UpdateRating(comic));
     }
 
     //
     // Types
     //
 
-    private class ScoreModel
-    {
-        public float GrphicScore { get; init; }
-        public float ScriptScore { get; init; }
-        public int MissingPages { get; init; }
-    }
-
     private class MainPageMoreMenuItemCreator(AutoScorePlugin plugin) : ICommonMenuItemCreator
     {
-        public IEnumerable<IMenuItem> CreateMenuItems()
+        public IEnumerable<IMenuItem> CreateMenuItems(IUIContext uiContext)
         {
             return [
                 new SimpleMenuItem()
                 {
                     Text = "Update scores",
-                    Click = () => CoroutineUtils.Start(() => plugin.Context.WithBusyState(plugin.UpdateAllRatings)),
+                    Click = () => CoroutineUtils.Start(() => plugin.Context.Busy(plugin._core.UpdateAllRatings)),
+                },
+                new SimpleMenuItem()
+                {
+                    Text = "Show dialog",
+                    Click = () => CoroutineUtils.Start(async () =>
+                    {
+                        await plugin.Context.EnqueueDialogAsync(new EditScoreDialog());
+                    }),
                 }
             ];
         }
@@ -407,13 +73,13 @@ Character development:
 
     private class ComicMoreMenuItemCreator(AutoScorePlugin plugin) : IComicMenuItemCreator
     {
-        public IEnumerable<IMenuItem> CreateMenuItems(IComicModel primary, IEnumerable<IComicModel> selection)
+        public IEnumerable<IMenuItem> CreateMenuItems(IUIContext uiContext, IComicModel primary, IEnumerable<IComicModel> selection)
         {
             return [
                 new SimpleMenuItem()
                 {
                     Text = "Edit score",
-                    Click = () => CoroutineUtils.Start(() => plugin.EditComicScore(primary)),
+                    Click = () => CoroutineUtils.Start(() => plugin._core.EditComicScore(primary)),
                 }
             ];
         }

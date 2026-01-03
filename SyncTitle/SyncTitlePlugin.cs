@@ -45,7 +45,7 @@ public class SyncTitlePlugin : IPlugin
         List<Tuple<IComicModel, string>> comicToNewPath = [];
         foreach (long id in ids)
         {
-            IComicModel? comic = await Context.GetComicById(id);
+            IComicModel? comic = await Context.GetComic(id);
             if (comic is null || comic.IsHidden)
             {
                 continue;
@@ -102,7 +102,7 @@ public class SyncTitlePlugin : IPlugin
                 .SetPrimaryButtonText("OK")
                 .SetSecondaryButtonText("Cancel")
                 .Build();
-            if (await Context.EnqueueDialogAsync(options) != ContentDialogResult.Primary)
+            if ((await Context.EnqueueDialogAsync(options)).Result != ContentDialogResult.Primary)
             {
                 return;
             }
@@ -165,13 +165,13 @@ public class SyncTitlePlugin : IPlugin
 
     private class MainPageMoreMenuItemCreator(SyncTitlePlugin plugin) : ICommonMenuItemCreator
     {
-        public IEnumerable<IMenuItem> CreateMenuItems()
+        public IEnumerable<IMenuItem> CreateMenuItems(IUIContext uiContext)
         {
             return [
                 new SimpleMenuItem()
                 {
                     Text = "Sync titles",
-                    Click = () => CoroutineUtils.Start(() => plugin.Context.WithBusyState(plugin.SyncTitles)),
+                    Click = () => CoroutineUtils.Start(() => plugin.Context.Busy(plugin.SyncTitles)),
                 }
             ];
         }
