@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using ComicReader.SDK.Common.Utils;
@@ -81,78 +79,15 @@ internal class AutoScoreCore
             ScriptScore = 0F,
             MissingPages = 0,
         };
-        string input = await GetTextFromNotepadAsync($@"Editing score for ""{comic.Title1}""...
-
-Impressive 9
- Excellent 8
-      Good 6
-      Fair 4
-      Poor 2
-  Terrible 0
-
-#### Graphic ####
-           Storyboard: 
-     Character design: 
-     Body proportions: 
-   Facial expressions: 
-              Details: 
-            Art style: 
-
-#### Script ####
-                 Plot: 
-               Pacing: 
-             Dialogue: 
-Character development: 
-          Originality: 
-               Themes: 
-
-#### Others ####
-        Missing pages: {scoreModel.MissingPages}
-");
-
-        List<string> scoreStrings = [];
-        MatchCollection matches = Regex.Matches(input, @":([^\r\n]*)");
-        foreach (Match match in matches)
+        DetailedScoreModel detailedScoreModel = DetailedScoreModel.FromComicModel(comic) ?? new();
+        var dialog = new EditScoreDialog(scoreModel, detailedScoreModel);
+        await AutoScorePlugin.Instance.Context.EnqueueDialogAsync(dialog);
+        detailedScoreModel.SaveToComicModel(comic);
+        if (dialog.IsSaveClicked)
         {
-            scoreStrings.Add(match.Groups[1].Value.Trim());
+            await comic.SetDescription(ReplaceFirstLine(comic.Description, scoreModel.ToDatabaseString()));
+            await UpdateRating(comic);
         }
-
-        if (scoreStrings.Count != 13)
-        {
-            return;
-        }
-
-        int graphicScoreTotal = 0;
-        int scriptScoreTotal = 0;
-        int missingPages;
-        try
-        {
-            graphicScoreTotal += int.Parse(scoreStrings[0]);
-            graphicScoreTotal += int.Parse(scoreStrings[1]);
-            graphicScoreTotal += int.Parse(scoreStrings[2]);
-            graphicScoreTotal += int.Parse(scoreStrings[3]);
-            graphicScoreTotal += int.Parse(scoreStrings[4]);
-            graphicScoreTotal += int.Parse(scoreStrings[5]);
-            scriptScoreTotal += int.Parse(scoreStrings[6]);
-            scriptScoreTotal += int.Parse(scoreStrings[7]);
-            scriptScoreTotal += int.Parse(scoreStrings[8]);
-            scriptScoreTotal += int.Parse(scoreStrings[9]);
-            scriptScoreTotal += int.Parse(scoreStrings[10]);
-            scriptScoreTotal += int.Parse(scoreStrings[11]);
-            missingPages = int.Parse(scoreStrings[12]);
-        }
-        catch (Exception)
-        {
-            return;
-        }
-
-        graphicScoreTotal = Math.Clamp(graphicScoreTotal, 0, 50);
-        scriptScoreTotal = Math.Clamp(scriptScoreTotal, 0, 50);
-        missingPages = Math.Clamp(missingPages, 0, 10);
-        string graphicScore = Math.Round(graphicScoreTotal / 10F, 1, MidpointRounding.AwayFromZero).ToString("0.#");
-        string scriptScore = Math.Round(scriptScoreTotal / 10F, 1, MidpointRounding.AwayFromZero).ToString("0.#");
-        await comic.SetDescription(ReplaceFirstLine(comic.Description, $"{graphicScore}/{scriptScore}/{missingPages}"));
-        await UpdateRating(comic);
     }
 
     public async Task UpdateAllRatings()
@@ -175,7 +110,7 @@ Character development:
                 continue;
             }
 
-            int score = CalculateAbsoluteScore(scoreModel);
+            int score = scoreModel.GetAbsoluteScore();
             if (score == 0)
             {
                 continue;
@@ -223,7 +158,7 @@ Character development:
             return;
         }
 
-        int score = CalculateAbsoluteScore(scoreModel);
+        int score = scoreModel.GetAbsoluteScore();
         if (score == 0)
         {
             await comic.SetRating(-1);
@@ -259,42 +194,7 @@ Character development:
     {
         string description = comic.Description.Trim();
         string firstLine = GetFirstLine(description);
-        if (string.IsNullOrEmpty(firstLine))
-        {
-            return null;
-        }
-
-        string[] pieces = firstLine.Split('/');
-        if (pieces.Length != 3)
-        {
-            return null;
-        }
-
-        string graphicScoreStr = pieces[0];
-        string scriptScoreStr = pieces[1];
-        string missingPagesStr = pieces[2];
-
-        if (!float.TryParse(graphicScoreStr, out float graphicScore) || graphicScore < 0F || graphicScore > 5F)
-        {
-            return null;
-        }
-
-        if (!float.TryParse(scriptScoreStr, out float scriptScore) || scriptScore < 0F || scriptScore > 5F)
-        {
-            return null;
-        }
-
-        if (!int.TryParse(missingPagesStr, out int missingPages) || missingPages < 0 || missingPages > 10)
-        {
-            return null;
-        }
-
-        return new ScoreModel
-        {
-            GrphicScore = graphicScore,
-            ScriptScore = scriptScore,
-            MissingPages = missingPages,
-        };
+        return ScoreModel.FromDatabaseString(firstLine);
     }
 
     private static int CalculateRelativeScore(int absoluteScore, int minScore, int maxScore)
@@ -313,18 +213,6 @@ Character development:
         int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
         score = Math.Clamp(score, 0, 100);
         return score;
-    }
-
-    private static int CalculateAbsoluteScore(ScoreModel scoreModel)
-    {
-        float graphicScore = scoreModel.GrphicScore;
-        float scriptScore = scoreModel.ScriptScore;
-        int missingPages = scoreModel.MissingPages;
-        float scoreFloat = graphicScore * 120F + scriptScore * 100F;
-        scoreFloat *= 1F - 0.04F * Math.Abs(graphicScore - scriptScore);
-        scoreFloat *= 1F - 0.05F * missingPages;
-        int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
-        return Math.Max(score, 0);
     }
 
     private static string GetFirstLine(string text)
@@ -347,27 +235,5 @@ Character development:
 
         int index = input.IndexOfAny(['\r', '\n']);
         return index == -1 ? newFirstLine : string.Concat(newFirstLine, input.AsSpan(index));
-    }
-
-    private static async Task<string> GetTextFromNotepadAsync(string initialText)
-    {
-        string tempFile = Path.GetTempFileName();
-        File.WriteAllText(tempFile, initialText);
-        var process = Process.Start("notepad.exe", tempFile);
-        await Task.Run(() => process.WaitForExit());
-        string text = File.ReadAllText(tempFile);
-        File.Delete(tempFile);
-        return text;
-    }
-
-    //
-    // Types
-    //
-
-    private class ScoreModel
-    {
-        public float GrphicScore { get; init; }
-        public float ScriptScore { get; init; }
-        public int MissingPages { get; init; }
     }
 }

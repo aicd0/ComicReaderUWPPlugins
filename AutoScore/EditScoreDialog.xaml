@@ -4,22 +4,339 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     Title="{x:Bind ViewModel.Title, Mode=OneWay}"
     mc:Ignorable="d">
 
-    <ContentDialog.TitleTemplate>
-        <DataTemplate>
-            <TextBlock
-                MaxWidth="600"
-                Text="{Binding}"
-                TextTrimming="CharacterEllipsis"
-                TextWrapping="NoWrap" />
-        </DataTemplate>
-    </ContentDialog.TitleTemplate>
+    <ContentDialog.Resources>
+        <ResourceDictionary>
+            <Style
+                x:Key="CustomRadioButtonStyle"
+                BasedOn="{StaticResource DefaultRadioButtonStyle}"
+                TargetType="RadioButton">
+                <Setter Property="MinWidth" Value="43" />
+                <Setter Property="Margin" Value="0" />
+            </Style>
+        </ResourceDictionary>
+    </ContentDialog.Resources>
 
-    <StackPanel Width="600" Orientation="Vertical">
-        <TextBlock Text="Text" />
+    <StackPanel Width="720" Orientation="Vertical">
+        <TextBlock Text="{x:Bind ViewModel.Description, Mode=OneWay}" />
+        <Grid Height="8" />
+        <Button Click="ResetButton_Click" Content="Reset" />
+        <Grid>
+            <TextBlock Margin="160,0,0,0" Text="Terrible" />
+            <TextBlock Margin="260,0,0,0" Text="Poor" />
+            <TextBlock Margin="360,0,0,0" Text="Fair" />
+            <TextBlock Margin="460,0,0,0" Text="Good" />
+            <TextBlock Margin="560,0,0,0" Text="Excellent" />
+        </Grid>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Storyboard" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.S11Selection, Mode=OneWay}"
+                SelectionChanged="S11_SelectionChanged">
+                <RadioButton Content="0" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="1" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="2" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="3" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="4" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="5" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="6" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="7" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="8" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="9" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Character design" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.S12Selection, Mode=OneWay}"
+                SelectionChanged="S12_SelectionChanged">
+                <RadioButton Content="0" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="1" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="2" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="3" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="4" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="5" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="6" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="7" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="8" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="9" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Body proportions" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.S13Selection, Mode=OneWay}"
+                SelectionChanged="S13_SelectionChanged">
+                <RadioButton Content="0" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="1" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="2" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="3" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="4" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="5" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="6" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="7" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="8" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="9" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Facial expressions" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.S14Selection, Mode=OneWay}"
+                SelectionChanged="S14_SelectionChanged">
+                <RadioButton Content="0" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="1" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="2" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="3" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="4" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="5" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="6" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="7" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="8" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="9" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Details" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.S15Selection, Mode=OneWay}"
+                SelectionChanged="S15_SelectionChanged">
+                <RadioButton Content="0" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="1" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="2" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="3" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="4" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="5" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="6" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="7" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="8" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="9" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Art style" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.S16Selection, Mode=OneWay}"
+                SelectionChanged="S16_SelectionChanged">
+                <RadioButton Content="0" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="1" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="2" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="3" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="4" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="5" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="6" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="7" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="8" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="9" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
+        <Grid Height="8" />
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Plot" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.S21Selection, Mode=OneWay}"
+                SelectionChanged="S21_SelectionChanged">
+                <RadioButton Content="0" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="1" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="2" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="3" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="4" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="5" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="6" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="7" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="8" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="9" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Pacing" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.S22Selection, Mode=OneWay}"
+                SelectionChanged="S22_SelectionChanged">
+                <RadioButton Content="0" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="1" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="2" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="3" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="4" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="5" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="6" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="7" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="8" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="9" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Dialogue" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.S23Selection, Mode=OneWay}"
+                SelectionChanged="S23_SelectionChanged">
+                <RadioButton Content="0" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="1" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="2" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="3" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="4" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="5" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="6" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="7" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="8" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="9" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Character development" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.S24Selection, Mode=OneWay}"
+                SelectionChanged="S24_SelectionChanged">
+                <RadioButton Content="0" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="1" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="2" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="3" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="4" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="5" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="6" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="7" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="8" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="9" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Originality" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.S25Selection, Mode=OneWay}"
+                SelectionChanged="S25_SelectionChanged">
+                <RadioButton Content="0" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="1" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="2" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="3" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="4" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="5" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="6" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="7" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="8" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="9" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Themes" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.S26Selection, Mode=OneWay}"
+                SelectionChanged="S26_SelectionChanged">
+                <RadioButton Content="0" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="1" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="2" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="3" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="4" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="5" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="6" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="7" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="8" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="9" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
+        <Grid Height="8" />
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Missing pages" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.S31Selection, Mode=OneWay}"
+                SelectionChanged="S31_SelectionChanged">
+                <RadioButton Content="0" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="1" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="2" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="3" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="4" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="5" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="6" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="7" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="8" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="9" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="10" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
+        <Grid Margin="0,15,0,0" HorizontalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="5" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Button
+                Grid.Column="0"
+                HorizontalAlignment="Stretch"
+                Click="SaveButton_Click"
+                Content="Save" />
+            <Button
+                Grid.Column="2"
+                HorizontalAlignment="Stretch"
+                Click="CancelButton_Click"
+                Content="Cancel" />
+        </Grid>
     </StackPanel>
 
 </ContentDialog>
+

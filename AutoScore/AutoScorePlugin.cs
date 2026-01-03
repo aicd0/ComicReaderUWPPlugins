@@ -59,14 +59,6 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
                     Text = "Update scores",
                     Click = () => CoroutineUtils.Start(() => plugin.Context.Busy(plugin._core.UpdateAllRatings)),
                 },
-                new SimpleMenuItem()
-                {
-                    Text = "Show dialog",
-                    Click = () => CoroutineUtils.Start(async () =>
-                    {
-                        await plugin.Context.EnqueueDialogAsync(new EditScoreDialog());
-                    }),
-                }
             ];
         }
     }
