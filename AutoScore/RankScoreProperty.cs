@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using ComicReader.SDK.Plugins.Comic;
-using ComicReader.SDK.Plugins.Property;
+using ComicReaderUWP.SDK.Plugins.Comic;
+using ComicReaderUWP.SDK.Plugins.Property;
 
 namespace AutoScore;
 

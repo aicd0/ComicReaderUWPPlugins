@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 
-using ComicReader.SDK.Common.Utils;
-using ComicReader.SDK.Plugins;
-using ComicReader.SDK.Plugins.Comic;
-using ComicReader.SDK.Plugins.Common;
-using ComicReader.SDK.Plugins.Menu;
+using ComicReaderUWP.SDK.Common.Utils;
+using ComicReaderUWP.SDK.Plugins;
+using ComicReaderUWP.SDK.Plugins.Comic;
+using ComicReaderUWP.SDK.Plugins.Common;
+using ComicReaderUWP.SDK.Plugins.Menu;
 
 namespace AutoScore;
 

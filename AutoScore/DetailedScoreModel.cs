@@ -1,8 +1,8 @@
 ﻿// Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
-using ComicReader.SDK.Common.Utils;
-using ComicReader.SDK.Plugins.Comic;
+using ComicReaderUWP.SDK.Common.Utils;
+using ComicReaderUWP.SDK.Plugins.Comic;
 
 namespace AutoScore;
 

@@ -7,8 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-using ComicReader.SDK.Common.Utils;
-using ComicReader.SDK.Plugins.Comic;
+using ComicReaderUWP.SDK.Common.Utils;
+using ComicReaderUWP.SDK.Plugins.Comic;
 
 namespace AutoScore;
 

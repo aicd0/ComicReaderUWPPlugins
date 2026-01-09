@@ -8,12 +8,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-using ComicReader.SDK.Common.Utils;
-using ComicReader.SDK.DataModels;
-using ComicReader.SDK.Plugins;
-using ComicReader.SDK.Plugins.Comic;
-using ComicReader.SDK.Plugins.Common;
-using ComicReader.SDK.Plugins.Menu;
+using ComicReaderUWP.SDK.Common.Utils;
+using ComicReaderUWP.SDK.DataModels;
+using ComicReaderUWP.SDK.Plugins;
+using ComicReaderUWP.SDK.Plugins.Comic;
+using ComicReaderUWP.SDK.Plugins.Common;
+using ComicReaderUWP.SDK.Plugins.Menu;
 
 using Microsoft.UI.Xaml.Controls;
 
