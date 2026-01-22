@@ -1,7 +1,6 @@
 ﻿// Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
 using System.ComponentModel;
 
 namespace AutoScore;
@@ -220,29 +219,42 @@ internal partial class EditScoreDialogViewModel : INotifyPropertyChanged
         }
     }
 
-    private ScoreModel? _oldScore;
-    private ScoreModel? _score;
-    private DetailedScoreModel? _detailedScore;
+    private bool _isRatingVisible = false;
+    public bool IsRatingVisible
+    {
+        get => _isRatingVisible;
+        set
+        {
+            if (_isRatingVisible != value)
+            {
+                _isRatingVisible = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsRatingVisible)));
+            }
+        }
+    }
 
-    public void Initialize(ScoreModel scoreModel, DetailedScoreModel detailedScoreModel)
+    private ScoreModel? _oldScoreModel;
+    private ScoreModel? _newScoreModel;
+
+    public void Initialize(ScoreModel scoreModel)
     {
         Title = "Edit score";
-        _oldScore = scoreModel.Clone();
-        _score = scoreModel;
-        _detailedScore = detailedScoreModel;
-        S11Selection = detailedScoreModel.S11;
-        S12Selection = detailedScoreModel.S12;
-        S13Selection = detailedScoreModel.S13;
-        S14Selection = detailedScoreModel.S14;
-        S15Selection = detailedScoreModel.S15;
-        S16Selection = detailedScoreModel.S16;
-        S21Selection = detailedScoreModel.S21;
-        S22Selection = detailedScoreModel.S22;
-        S23Selection = detailedScoreModel.S23;
-        S24Selection = detailedScoreModel.S24;
-        S25Selection = detailedScoreModel.S25;
-        S26Selection = detailedScoreModel.S26;
-        S31Selection = detailedScoreModel.S31;
+        _oldScoreModel = scoreModel.Clone();
+        _newScoreModel = scoreModel;
+        S11Selection = scoreModel.S11;
+        S12Selection = scoreModel.S12;
+        S13Selection = scoreModel.S13;
+        S14Selection = scoreModel.S14;
+        S15Selection = scoreModel.S15;
+        S16Selection = scoreModel.S16;
+        S21Selection = scoreModel.S21;
+        S22Selection = scoreModel.S22;
+        S23Selection = scoreModel.S23;
+        S24Selection = scoreModel.S24;
+        S25Selection = scoreModel.S25;
+        S26Selection = scoreModel.S26;
+        S31Selection = scoreModel.S31;
+        IsRatingVisible = scoreModel.IsRated;
         UpdateScore();
     }
 
@@ -342,51 +354,38 @@ internal partial class EditScoreDialogViewModel : INotifyPropertyChanged
         UpdateScore();
     }
 
+    public void SetRatingVisible(bool visible)
+    {
+        _isRatingVisible = visible;
+        UpdateScore();
+    }
+
     private void UpdateScore()
     {
-        ScoreModel? oldScore = _oldScore;
-        ScoreModel? score = _score;
-        DetailedScoreModel? detailedScore = _detailedScore;
-        if (oldScore is null || score is null || detailedScore is null)
+        ScoreModel? oldScoreModel = _oldScoreModel;
+        ScoreModel? newScoreModel = _newScoreModel;
+        if (oldScoreModel is null || newScoreModel is null)
         {
             return;
         }
 
-        detailedScore.S11 = _s11Selection;
-        detailedScore.S12 = _s12Selection;
-        detailedScore.S13 = _s13Selection;
-        detailedScore.S14 = _s14Selection;
-        detailedScore.S15 = _s15Selection;
-        detailedScore.S16 = _s16Selection;
-        detailedScore.S21 = _s21Selection;
-        detailedScore.S22 = _s22Selection;
-        detailedScore.S23 = _s23Selection;
-        detailedScore.S24 = _s24Selection;
-        detailedScore.S25 = _s25Selection;
-        detailedScore.S26 = _s26Selection;
-        detailedScore.S31 = _s31Selection;
+        newScoreModel.S11 = _s11Selection;
+        newScoreModel.S12 = _s12Selection;
+        newScoreModel.S13 = _s13Selection;
+        newScoreModel.S14 = _s14Selection;
+        newScoreModel.S15 = _s15Selection;
+        newScoreModel.S16 = _s16Selection;
+        newScoreModel.S21 = _s21Selection;
+        newScoreModel.S22 = _s22Selection;
+        newScoreModel.S23 = _s23Selection;
+        newScoreModel.S24 = _s24Selection;
+        newScoreModel.S25 = _s25Selection;
+        newScoreModel.S26 = _s26Selection;
+        newScoreModel.S31 = _s31Selection;
+        newScoreModel.IsRated = _isRatingVisible;
 
-        float graphicScoreTotal =
-            detailedScore.S11 +
-            detailedScore.S12 +
-            detailedScore.S13 +
-            detailedScore.S14 +
-            detailedScore.S15 +
-            detailedScore.S16;
-        float scriptScoreTotal =
-            detailedScore.S21 +
-            detailedScore.S22 +
-            detailedScore.S23 +
-            detailedScore.S24 +
-            detailedScore.S25 +
-            detailedScore.S26;
-        int missingPages = detailedScore.S31;
-        graphicScoreTotal = Math.Clamp(graphicScoreTotal / 10F, 0, 5);
-        scriptScoreTotal = Math.Clamp(scriptScoreTotal / 10F, 0, 5);
-        missingPages = Math.Clamp(missingPages, 0, 10);
-        score.GrphicScore = graphicScoreTotal;
-        score.ScriptScore = scriptScoreTotal;
-        score.MissingPages = missingPages;
-        Description = $"Old score: {oldScore.ToDatabaseString()} ({oldScore.GetAbsoluteScore()})\nScore: {score.ToDatabaseString()} ({score.GetAbsoluteScore()})";
+        int oldScore = oldScoreModel.GetAbsoluteScore();
+        int newScore = newScoreModel.GetAbsoluteScore();
+        Description = $"Old score: {oldScore}\nNew score: {newScore}";
     }
 }

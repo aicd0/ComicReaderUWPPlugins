@@ -12,7 +12,7 @@ using ComicReaderUWP.SDK.Plugins.Menu;
 
 namespace AutoScore;
 
-public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
+public partial class AutoScorePlugin : IPlugin
 {
     private static AutoScorePlugin? _instance = null;
     public static AutoScorePlugin Instance => _instance ?? throw new InvalidOperationException("Plugin not initialized.");
@@ -34,15 +34,9 @@ public partial class AutoScorePlugin : IPlugin, IComicEditedHandler
     {
         _instance = this;
         _context = context;
-        Context.SetComicEditedHandler(this);
         Context.SetMainPageMoreMenuItemCreator(new MainPageMoreMenuItemCreator(this));
         Context.SetComicMenuItemCreator(new ComicMoreMenuItemCreator(this));
         Context.RegisterComicVirtualProperty(new RankScoreProperty());
-    }
-
-    public void ComicEdited(IComicModel comic)
-    {
-        CoroutineUtils.Start(() => _core.UpdateRating(comic));
     }
 
     //

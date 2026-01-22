@@ -11,11 +11,11 @@ internal sealed partial class EditScoreDialog : ContentDialog
 
     public bool IsSaveClicked { get; private set; } = false;
 
-    public EditScoreDialog(ScoreModel scoreModel, DetailedScoreModel detailedScoreModel)
+    public EditScoreDialog(ScoreModel scoreModel)
     {
         InitializeComponentForPlugin();
 
-        ViewModel.Initialize(scoreModel, detailedScoreModel);
+        ViewModel.Initialize(scoreModel);
     }
 
     private void ResetButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -97,6 +97,11 @@ internal sealed partial class EditScoreDialog : ContentDialog
     private void S31_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         ViewModel.SetS31(((RadioButtons)sender).SelectedIndex);
+    }
+
+    private void RatingVisibilityCheckBox_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        ViewModel.SetRatingVisible(((CheckBox)sender).IsChecked ?? false);
     }
 
     private void InitializeComponentForPlugin()

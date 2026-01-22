@@ -319,6 +319,11 @@
                 <RadioButton Content="10" Style="{StaticResource CustomRadioButtonStyle}" />
             </RadioButtons>
         </StackPanel>
+        <CheckBox
+            Margin="0,8,0,0"
+            Click="RatingVisibilityCheckBox_Click"
+            Content="Rating visible"
+            IsChecked="{x:Bind ViewModel.IsRatingVisible, Mode=OneWay}" />
         <Grid Margin="0,15,0,0" HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

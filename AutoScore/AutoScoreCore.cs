@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -73,19 +72,12 @@ internal class AutoScoreCore
             return;
         }
 
-        ScoreModel scoreModel = GetComicScoreModel(comic) ?? new()
-        {
-            GrphicScore = 0F,
-            ScriptScore = 0F,
-            MissingPages = 0,
-        };
-        DetailedScoreModel detailedScoreModel = DetailedScoreModel.FromComicModel(comic) ?? new();
-        var dialog = new EditScoreDialog(scoreModel, detailedScoreModel);
+        ScoreModel scoreModel = ScoreModel.Load(comic) ?? new();
+        var dialog = new EditScoreDialog(scoreModel);
         await AutoScorePlugin.Instance.Context.EnqueueDialogAsync(dialog);
-        detailedScoreModel.SaveToComicModel(comic);
         if (dialog.IsSaveClicked)
         {
-            await comic.SetDescription(ReplaceFirstLine(comic.Description, scoreModel.ToDatabaseString()));
+            scoreModel.Save(comic);
             await UpdateRating(comic);
         }
     }
@@ -96,6 +88,7 @@ internal class AutoScoreCore
 
         int minScore = -1;
         int maxScore = -1;
+        List<IComicModel> updatingComics = [];
         foreach (long comicId in comicIds)
         {
             IComicModel? comic = await AutoScorePlugin.Instance.Context.GetComic(comicId);
@@ -104,7 +97,9 @@ internal class AutoScoreCore
                 continue;
             }
 
-            ScoreModel? scoreModel = GetComicScoreModel(comic);
+            updatingComics.Add(comic);
+
+            var scoreModel = ScoreModel.Load(comic);
             if (scoreModel is null)
             {
                 continue;
@@ -131,14 +126,8 @@ internal class AutoScoreCore
         MinScore = minScore;
         MaxScore = maxScore;
 
-        foreach (long comicId in comicIds)
+        foreach (IComicModel comic in updatingComics)
         {
-            IComicModel? comic = await AutoScorePlugin.Instance.Context.GetComic(comicId);
-            if (comic is null)
-            {
-                continue;
-            }
-
             await UpdateRating(comic);
         }
     }
@@ -150,8 +139,8 @@ internal class AutoScoreCore
             return;
         }
 
-        ScoreModel? scoreModel = GetComicScoreModel(comic);
-        if (scoreModel is null)
+        var scoreModel = ScoreModel.Load(comic);
+        if (scoreModel is null || !scoreModel.IsRated)
         {
             await comic.SetRating(-1);
             await comic.SetCompletionStatus(CompletionStatusEnum.NotStarted);
@@ -190,13 +179,6 @@ internal class AutoScoreCore
         return comic.Tags.FirstOrDefault(x => x.Name == "Type")?.Tags.Contains("Manga") ?? false;
     }
 
-    private static ScoreModel? GetComicScoreModel(IComicModel comic)
-    {
-        string description = comic.Description.Trim();
-        string firstLine = GetFirstLine(description);
-        return ScoreModel.FromDatabaseString(firstLine);
-    }
-
     private static int CalculateRelativeScore(int absoluteScore, int minScore, int maxScore)
     {
         if (absoluteScore < minScore)
@@ -213,27 +195,5 @@ internal class AutoScoreCore
         int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
         score = Math.Clamp(score, 0, 100);
         return score;
-    }
-
-    private static string GetFirstLine(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-        {
-            return text;
-        }
-
-        using StringReader reader = new(text);
-        return reader.ReadLine() ?? string.Empty;
-    }
-
-    private static string ReplaceFirstLine(string input, string newFirstLine)
-    {
-        if (string.IsNullOrEmpty(input))
-        {
-            return newFirstLine;
-        }
-
-        int index = input.IndexOfAny(['\r', '\n']);
-        return index == -1 ? newFirstLine : string.Concat(newFirstLine, input.AsSpan(index));
     }
 }

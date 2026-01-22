@@ -2,20 +2,108 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
+using ComicReaderUWP.SDK.Common.Utils;
+using ComicReaderUWP.SDK.Plugins.Comic;
 
 namespace AutoScore;
 
 internal class ScoreModel
 {
-    public float GrphicScore { get; set; }
-    public float ScriptScore { get; set; }
-    public int MissingPages { get; set; }
+    private const string LIB_DETAIL_1 = "Detail1";
+
+    public bool IsRated { get; set; } = false;
+    public int S11 { get; set; } = 0;
+    public int S12 { get; set; } = 0;
+    public int S13 { get; set; } = 0;
+    public int S14 { get; set; } = 0;
+    public int S15 { get; set; } = 0;
+    public int S16 { get; set; } = 0;
+    public int S21 { get; set; } = 0;
+    public int S22 { get; set; } = 0;
+    public int S23 { get; set; } = 0;
+    public int S24 { get; set; } = 0;
+    public int S25 { get; set; } = 0;
+    public int S26 { get; set; } = 0;
+    public int S31 { get; set; } = 0;
+
+    public ScoreModel Clone()
+    {
+        return new()
+        {
+            IsRated = IsRated,
+            S11 = S11,
+            S12 = S12,
+            S13 = S13,
+            S14 = S14,
+            S15 = S15,
+            S16 = S16,
+            S21 = S21,
+            S22 = S22,
+            S23 = S23,
+            S24 = S24,
+            S25 = S25,
+            S26 = S26,
+            S31 = S31,
+        };
+    }
+
+    public void Save(IComicModel comic)
+    {
+        JsonModel jsonModel = new()
+        {
+            IsRated = IsRated,
+            S11 = S11,
+            S12 = S12,
+            S13 = S13,
+            S14 = S14,
+            S15 = S15,
+            S16 = S16,
+            S21 = S21,
+            S22 = S22,
+            S23 = S23,
+            S24 = S24,
+            S25 = S25,
+            S26 = S26,
+            S31 = S31,
+        };
+        string jsonString = JsonSerializer.Serialize(jsonModel);
+        AutoScorePlugin.Instance.Context.GetKVDatabase().GetCollection(LIB_DETAIL_1).Set(comic.Id.ToString(), jsonString);
+    }
+
+    public static ScoreModel? Load(IComicModel comic)
+    {
+        string? dbString = AutoScorePlugin.Instance.Context.GetKVDatabase().GetCollection(LIB_DETAIL_1).GetValue<string>(comic.Id.ToString());
+        if (string.IsNullOrEmpty(dbString))
+        {
+            return null;
+        }
+
+        return FromDatabaseString(dbString);
+    }
 
     public int GetAbsoluteScore()
     {
-        float graphicScore = GrphicScore;
-        float scriptScore = ScriptScore;
-        int missingPages = MissingPages;
+        float graphicScore =
+            S11 +
+            S12 +
+            S13 +
+            S14 +
+            S15 +
+            S16;
+        float scriptScore =
+            S21 +
+            S22 +
+            S23 +
+            S24 +
+            S25 +
+            S26;
+        int missingPages = S31;
+        graphicScore = Math.Clamp(graphicScore / 10F, 0, 5);
+        scriptScore = Math.Clamp(scriptScore / 10F, 0, 5);
+        missingPages = Math.Clamp(missingPages, 0, 10);
         float scoreFloat = graphicScore * 120F + scriptScore * 100F;
         scoreFloat *= 1F - 0.04F * Math.Abs(graphicScore - scriptScore);
         scoreFloat *= 1F - 0.05F * missingPages;
@@ -23,60 +111,111 @@ internal class ScoreModel
         return Math.Max(score, 0);
     }
 
-    public ScoreModel Clone()
+    private static ScoreModel? FromDatabaseString(string dbString)
     {
-        return new()
+        JsonModel? jsonModel = null;
+        try
         {
-            GrphicScore = GrphicScore,
-            ScriptScore = ScriptScore,
-            MissingPages = MissingPages
-        };
+            jsonModel = JsonSerializer.Deserialize<JsonModel>(dbString);
+        }
+        catch (JsonException)
+        {
+        }
+
+        if (jsonModel is not null)
+        {
+            return new()
+            {
+                IsRated = jsonModel.IsRated,
+                S11 = jsonModel.S11,
+                S12 = jsonModel.S12,
+                S13 = jsonModel.S13,
+                S14 = jsonModel.S14,
+                S15 = jsonModel.S15,
+                S16 = jsonModel.S16,
+                S21 = jsonModel.S21,
+                S22 = jsonModel.S22,
+                S23 = jsonModel.S23,
+                S24 = jsonModel.S24,
+                S25 = jsonModel.S25,
+                S26 = jsonModel.S26,
+                S31 = jsonModel.S31,
+            };
+        }
+
+        string[] parts = dbString.Split(',');
+        if (parts.Length == 13)
+        {
+            try
+            {
+                return new ScoreModel
+                {
+                    IsRated = true,
+                    S11 = int.Parse(parts[0]),
+                    S12 = int.Parse(parts[1]),
+                    S13 = int.Parse(parts[2]),
+                    S14 = int.Parse(parts[3]),
+                    S15 = int.Parse(parts[4]),
+                    S16 = int.Parse(parts[5]),
+                    S21 = int.Parse(parts[6]),
+                    S22 = int.Parse(parts[7]),
+                    S23 = int.Parse(parts[8]),
+                    S24 = int.Parse(parts[9]),
+                    S25 = int.Parse(parts[10]),
+                    S26 = int.Parse(parts[11]),
+                    S31 = int.Parse(parts[12]),
+                };
+            }
+            catch (FormatException)
+            {
+            }
+        }
+
+        return null;
     }
 
-    public string ToDatabaseString()
+    private class JsonModel
     {
-        string graphicScore = Math.Round(GrphicScore, 1, MidpointRounding.AwayFromZero).ToString("0.#");
-        string scriptScore = Math.Round(ScriptScore, 1, MidpointRounding.AwayFromZero).ToString("0.#");
-        return $"{graphicScore}/{scriptScore}/{MissingPages}";
-    }
+        [JsonPropertyName("IsRated")]
+        public bool IsRated { get; set; }
 
-    public static ScoreModel? FromDatabaseString(string value)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            return null;
-        }
+        [JsonPropertyName("S11")]
+        public int S11 { get; set; }
 
-        string[] pieces = value.Split('/');
-        if (pieces.Length != 3)
-        {
-            return null;
-        }
+        [JsonPropertyName("S12")]
+        public int S12 { get; set; }
 
-        string graphicScoreStr = pieces[0];
-        string scriptScoreStr = pieces[1];
-        string missingPagesStr = pieces[2];
+        [JsonPropertyName("S13")]
+        public int S13 { get; set; }
 
-        if (!float.TryParse(graphicScoreStr, out float graphicScore) || graphicScore < 0F || graphicScore > 5F)
-        {
-            return null;
-        }
+        [JsonPropertyName("S14")]
+        public int S14 { get; set; }
 
-        if (!float.TryParse(scriptScoreStr, out float scriptScore) || scriptScore < 0F || scriptScore > 5F)
-        {
-            return null;
-        }
+        [JsonPropertyName("S15")]
+        public int S15 { get; set; }
 
-        if (!int.TryParse(missingPagesStr, out int missingPages) || missingPages < 0 || missingPages > 10)
-        {
-            return null;
-        }
+        [JsonPropertyName("S16")]
+        public int S16 { get; set; }
 
-        return new ScoreModel
-        {
-            GrphicScore = graphicScore,
-            ScriptScore = scriptScore,
-            MissingPages = missingPages,
-        };
+        [JsonPropertyName("S21")]
+        public int S21 { get; set; }
+
+        [JsonPropertyName("S22")]
+        public int S22 { get; set; }
+
+        [JsonPropertyName("S23")]
+        public int S23 { get; set; }
+
+        [JsonPropertyName("S24")]
+        public int S24 { get; set; }
+
+        [JsonPropertyName("S25")]
+        public int S25 { get; set; }
+
+        [JsonPropertyName("S26")]
+        public int S26 { get; set; }
+
+        [JsonPropertyName("S31")]
+        public int S31 { get; set; }
     }
 }
