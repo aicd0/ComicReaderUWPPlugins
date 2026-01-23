@@ -25,7 +25,10 @@ internal class AutoScoreCore
             return;
         }
 
-        ScoreModel scoreModel = ScoreModel.Load(comic) ?? new();
+        ScoreModel scoreModel = ScoreModel.Load(comic) ?? new()
+        {
+            IsRated = true,
+        };
         var dialog = new EditScoreDialog(scoreModel);
         await AutoScorePlugin.Instance.Context.EnqueueDialogAsync(dialog);
         if (dialog.IsSaveClicked)

@@ -12,7 +12,7 @@ namespace AutoScore;
 
 internal class ScoreModel
 {
-    public const int MAX_SCORE = 1100;
+    public const int MAX_SCORE = 1188;
 
     private const string LIB_DETAIL_1 = "Detail1";
 
@@ -103,14 +103,14 @@ internal class ScoreModel
             S25 +
             S26;
         int missingPages = S31;
-        graphicScore = Math.Clamp(graphicScore / 10F, 0, 5);
-        scriptScore = Math.Clamp(scriptScore / 10F, 0, 5);
+        graphicScore = Math.Clamp(graphicScore / 10F, 0F, 5.4F);
+        scriptScore = Math.Clamp(scriptScore / 10F, 0F, 5.4F);
         missingPages = Math.Clamp(missingPages, 0, 10);
         float scoreFloat = graphicScore * 120F + scriptScore * 100F;
         scoreFloat *= 1F - 0.04F * Math.Abs(graphicScore - scriptScore);
         scoreFloat *= 1F - 0.05F * missingPages;
         int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
-        return Math.Max(score, 0);
+        return Math.Clamp(score, 0, MAX_SCORE);
     }
 
     private static ScoreModel? FromDatabaseString(string dbString)
