@@ -12,6 +12,8 @@ namespace AutoScore;
 
 internal class ScoreModel
 {
+    public const int MAX_SCORE = 1100;
+
     private const string LIB_DETAIL_1 = "Detail1";
 
     public bool IsRated { get; set; } = false;
