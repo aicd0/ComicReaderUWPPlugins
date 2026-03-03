@@ -21,6 +21,21 @@
 
     <StackPanel Width="720" Orientation="Vertical">
         <TextBlock Text="{x:Bind ViewModel.Description, Mode=OneWay}" />
+        <Grid Height="4" />
+        <StackPanel Orientation="Horizontal">
+            <TextBlock
+                Width="160"
+                VerticalAlignment="Center"
+                Text="Mode" />
+            <RadioButtons
+                Margin="0,-8,0,0"
+                MaxColumns="11"
+                SelectedIndex="{x:Bind ViewModel.ModeSelection, Mode=OneWay}"
+                SelectionChanged="Mode_SelectionChanged">
+                <RadioButton Content="A" Style="{StaticResource CustomRadioButtonStyle}" />
+                <RadioButton Content="B" Style="{StaticResource CustomRadioButtonStyle}" />
+            </RadioButtons>
+        </StackPanel>
         <Grid Height="8" />
         <Button Click="ResetButton_Click" Content="Reset" />
         <Grid>

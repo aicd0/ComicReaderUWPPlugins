@@ -12,8 +12,6 @@ namespace AutoScore;
 
 internal class AutoScoreCore
 {
-    private const string LIB_MAIN = "Main";
-
     //
     // Public Methods
     //
@@ -25,15 +23,10 @@ internal class AutoScoreCore
             return;
         }
 
-        ScoreModel scoreModel = ScoreModel.Load(comic) ?? new()
-        {
-            IsRated = true,
-        };
-        var dialog = new EditScoreDialog(scoreModel);
+        var dialog = new EditScoreDialog(comic);
         await AutoScorePlugin.Instance.Context.EnqueueDialogAsync(dialog);
         if (dialog.IsSaveClicked)
         {
-            scoreModel.Save(comic);
             await UpdateRating(comic);
         }
     }
@@ -62,7 +55,7 @@ internal class AutoScoreCore
             return;
         }
 
-        var scoreModel = ScoreModel.Load(comic);
+        var scoreModel = ScoreModel.Load(comic, ScoreModel.ScoreSourceEnum.Main);
         if (scoreModel is null || !scoreModel.IsRated)
         {
             await comic.SetRating(-1);

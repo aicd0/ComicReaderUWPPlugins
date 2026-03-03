@@ -1,6 +1,8 @@
 // Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
+using ComicReaderUWP.SDK.Plugins.Comic;
+
 using Microsoft.UI.Xaml.Controls;
 
 namespace AutoScore;
@@ -11,11 +13,10 @@ internal sealed partial class EditScoreDialog : ContentDialog
 
     public bool IsSaveClicked { get; private set; } = false;
 
-    public EditScoreDialog(ScoreModel scoreModel)
+    public EditScoreDialog(IComicModel comic)
     {
         InitializeComponentForPlugin();
-
-        ViewModel.Initialize(scoreModel);
+        ViewModel.Initialize(comic);
     }
 
     private void ResetButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
@@ -25,6 +26,7 @@ internal sealed partial class EditScoreDialog : ContentDialog
 
     private void SaveButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
+        ViewModel.Save();
         IsSaveClicked = true;
         Hide();
     }
@@ -32,6 +34,11 @@ internal sealed partial class EditScoreDialog : ContentDialog
     private void CancelButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         Hide();
+    }
+
+    private void Mode_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        ViewModel.SetMode(((RadioButtons)sender).SelectedIndex);
     }
 
     private void S11_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -14,9 +14,7 @@ internal class ScoreModel
 {
     public const int MAX_SCORE = 1188;
 
-    private const string LIB_DETAIL_1 = "Detail1";
-
-    public bool IsRated { get; set; } = false;
+    public bool IsRated { get; set; } = true;
     public int S11 { get; set; } = 0;
     public int S12 { get; set; } = 0;
     public int S13 { get; set; } = 0;
@@ -30,6 +28,10 @@ internal class ScoreModel
     public int S25 { get; set; } = 0;
     public int S26 { get; set; } = 0;
     public int S31 { get; set; } = 0;
+
+    private ScoreModel()
+    {
+    }
 
     public ScoreModel Clone()
     {
@@ -52,7 +54,7 @@ internal class ScoreModel
         };
     }
 
-    public void Save(IComicModel comic)
+    public void Save(IComicModel comic, ScoreSourceEnum source)
     {
         JsonModel jsonModel = new()
         {
@@ -72,18 +74,9 @@ internal class ScoreModel
             S31 = S31,
         };
         string jsonString = JsonSerializer.Serialize(jsonModel);
-        AutoScorePlugin.Instance.Context.GetKVDatabase().GetCollection(LIB_DETAIL_1).Set(comic.Id.ToString(), jsonString);
-    }
-
-    public static ScoreModel? Load(IComicModel comic)
-    {
-        string? dbString = AutoScorePlugin.Instance.Context.GetKVDatabase().GetCollection(LIB_DETAIL_1).GetValue<string>(comic.Id.ToString());
-        if (string.IsNullOrEmpty(dbString))
-        {
-            return null;
-        }
-
-        return FromDatabaseString(dbString);
+        AutoScorePlugin.Instance.Context.GetKVDatabase()
+            .GetCollection(SourceToLibName(source))
+            .Set(comic.Id.ToString(), jsonString);
     }
 
     public int GetAbsoluteScore()
@@ -111,6 +104,24 @@ internal class ScoreModel
         scoreFloat *= 1F - 0.05F * missingPages;
         int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
         return Math.Clamp(score, 0, MAX_SCORE);
+    }
+
+    public static ScoreModel FromEmpty()
+    {
+        return new();
+    }
+
+    public static ScoreModel? Load(IComicModel comic, ScoreSourceEnum source)
+    {
+        string? dbString = AutoScorePlugin.Instance.Context.GetKVDatabase()
+            .GetCollection(SourceToLibName(source))
+            .GetValue<string>(comic.Id.ToString());
+        if (string.IsNullOrEmpty(dbString))
+        {
+            return null;
+        }
+
+        return FromDatabaseString(dbString);
     }
 
     private static ScoreModel? FromDatabaseString(string dbString)
@@ -176,6 +187,16 @@ internal class ScoreModel
         return null;
     }
 
+    private static string SourceToLibName(ScoreSourceEnum source)
+    {
+        return source switch
+        {
+            ScoreSourceEnum.Main => KVNames.LIB_DETAIL_1,
+            ScoreSourceEnum.Draft => KVNames.LIB_SCORE_DRAFT,
+            _ => throw new ArgumentException("Invalid score source"),
+        };
+    }
+
     private class JsonModel
     {
         [JsonPropertyName("IsRated")]
@@ -219,5 +240,11 @@ internal class ScoreModel
 
         [JsonPropertyName("S31")]
         public int S31 { get; set; }
+    }
+
+    public enum ScoreSourceEnum
+    {
+        Main,
+        Draft,
     }
 }

@@ -1,7 +1,11 @@
 ﻿// Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
 using System.ComponentModel;
+
+using ComicReaderUWP.SDK.Common.Utils;
+using ComicReaderUWP.SDK.Plugins.Comic;
 
 namespace AutoScore;
 
@@ -33,6 +37,20 @@ internal partial class EditScoreDialogViewModel : INotifyPropertyChanged
             {
                 _description = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Description)));
+            }
+        }
+    }
+
+    private int _modeSelection = 0;
+    public int ModeSelection
+    {
+        get => _modeSelection;
+        set
+        {
+            if (_modeSelection != value)
+            {
+                _modeSelection = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ModeSelection)));
             }
         }
     }
@@ -233,46 +251,49 @@ internal partial class EditScoreDialogViewModel : INotifyPropertyChanged
         }
     }
 
+    private IComicModel? _comic;
     private ScoreModel? _oldScoreModel;
     private ScoreModel? _newScoreModel;
+    private bool _suppressUpdate = false;
 
-    public void Initialize(ScoreModel scoreModel)
+    public void Initialize(IComicModel comic)
     {
         Title = "Edit score";
-        _oldScoreModel = scoreModel.Clone();
-        _newScoreModel = scoreModel;
-        S11Selection = scoreModel.S11;
-        S12Selection = scoreModel.S12;
-        S13Selection = scoreModel.S13;
-        S14Selection = scoreModel.S14;
-        S15Selection = scoreModel.S15;
-        S16Selection = scoreModel.S16;
-        S21Selection = scoreModel.S21;
-        S22Selection = scoreModel.S22;
-        S23Selection = scoreModel.S23;
-        S24Selection = scoreModel.S24;
-        S25Selection = scoreModel.S25;
-        S26Selection = scoreModel.S26;
-        S31Selection = scoreModel.S31;
-        IsRatingVisible = scoreModel.IsRated;
-        UpdateScore();
+        _comic = comic;
+        LoadMode();
+        LoadScore();
+    }
+
+    public void Save()
+    {
+        IComicModel? comic = _comic;
+        ScoreModel? scoreModel = _newScoreModel;
+        if (comic is null || scoreModel is null)
+        {
+            return;
+        }
+
+        scoreModel.Save(comic, ScoreModel.ScoreSourceEnum.Main);
+        ScoreModel.FromEmpty().Save(comic, ScoreModel.ScoreSourceEnum.Draft);
+    }
+
+    public void SetMode(int index)
+    {
+        if (index < 0)
+        {
+            return;
+        }
+
+        ModeSelection = index;
+        SaveMode();
+        LoadScore();
     }
 
     public void ResetScore()
     {
-        S11Selection = 0;
-        S12Selection = 0;
-        S13Selection = 0;
-        S14Selection = 0;
-        S15Selection = 0;
-        S16Selection = 0;
-        S21Selection = 0;
-        S22Selection = 0;
-        S23Selection = 0;
-        S24Selection = 0;
-        S25Selection = 0;
-        S26Selection = 0;
-        S31Selection = 0;
+        var defaultScoreModel = ScoreModel.FromEmpty();
+        defaultScoreModel.IsRated = IsRatingVisible;
+        ApplyScoreModel(defaultScoreModel);
         UpdateScore();
     }
 
@@ -360,8 +381,85 @@ internal partial class EditScoreDialogViewModel : INotifyPropertyChanged
         UpdateScore();
     }
 
+    private void LoadMode()
+    {
+        string mode = AutoScorePlugin.Instance.Context.GetKVDatabase()
+            .GetCollection(KVNames.LIB_SETTINGS)
+            .GetValueOrDefault(KVNames.SettingsKey.DEFAULT_EDIT_SCORE_MODE, string.Empty);
+        ModeSelection = mode switch
+        {
+            "Draft" => 1,
+            _ => 0,
+        };
+    }
+
+    private void SaveMode()
+    {
+        string mode = ModeSelection switch
+        {
+            0 => "Main",
+            1 => "Draft",
+            _ => throw new InvalidOperationException($"Invalid mode selection: {ModeSelection}"),
+        };
+        AutoScorePlugin.Instance.Context.GetKVDatabase()
+            .GetCollection(KVNames.LIB_SETTINGS)
+            .Set(KVNames.SettingsKey.DEFAULT_EDIT_SCORE_MODE, mode);
+    }
+
+    private void LoadScore()
+    {
+        IComicModel? comic = _comic;
+        if (comic is null)
+        {
+            return;
+        }
+
+        ScoreModel.ScoreSourceEnum source = ModeSelection switch
+        {
+            0 => ScoreModel.ScoreSourceEnum.Main,
+            1 => ScoreModel.ScoreSourceEnum.Draft,
+            _ => throw new InvalidOperationException("Invalid mode selection"),
+        };
+        ScoreModel scoreModel = ScoreModel.Load(comic, source) ?? ScoreModel.FromEmpty();
+        _oldScoreModel = scoreModel.Clone();
+        _newScoreModel = scoreModel.Clone();
+        ApplyScoreModel(scoreModel);
+        UpdateScore();
+    }
+
+    private void ApplyScoreModel(ScoreModel scoreModel)
+    {
+        _suppressUpdate = true;
+        try
+        {
+            S11Selection = scoreModel.S11;
+            S12Selection = scoreModel.S12;
+            S13Selection = scoreModel.S13;
+            S14Selection = scoreModel.S14;
+            S15Selection = scoreModel.S15;
+            S16Selection = scoreModel.S16;
+            S21Selection = scoreModel.S21;
+            S22Selection = scoreModel.S22;
+            S23Selection = scoreModel.S23;
+            S24Selection = scoreModel.S24;
+            S25Selection = scoreModel.S25;
+            S26Selection = scoreModel.S26;
+            S31Selection = scoreModel.S31;
+            IsRatingVisible = scoreModel.IsRated;
+        }
+        finally
+        {
+            _suppressUpdate = false;
+        }
+    }
+
     private void UpdateScore()
     {
+        if (_suppressUpdate)
+        {
+            return;
+        }
+
         ScoreModel? oldScoreModel = _oldScoreModel;
         ScoreModel? newScoreModel = _newScoreModel;
         if (oldScoreModel is null || newScoreModel is null)
@@ -387,5 +485,22 @@ internal partial class EditScoreDialogViewModel : INotifyPropertyChanged
         int oldScore = oldScoreModel.GetAbsoluteScore();
         int newScore = newScoreModel.GetAbsoluteScore();
         Description = $"Old score: {oldScore}\nNew score: {newScore}";
+
+        if (ModeSelection == 1)
+        {
+            SaveDraft();
+        }
+    }
+
+    private void SaveDraft()
+    {
+        IComicModel? comic = _comic;
+        ScoreModel? scoreModel = _newScoreModel;
+        if (comic is null || scoreModel is null)
+        {
+            return;
+        }
+
+        scoreModel.Save(comic, ScoreModel.ScoreSourceEnum.Draft);
     }
 }
