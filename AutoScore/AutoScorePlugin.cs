@@ -51,7 +51,7 @@ public partial class AutoScorePlugin : IPlugin
                 new SimpleMenuItem()
                 {
                     Text = "Update scores",
-                    Click = () => CoroutineUtils.Start(() => plugin.Context.Busy(plugin._core.UpdateAllRatings)),
+                    Click = () => CoroutineUtils.Run(() => plugin.Context.Busy(plugin._core.UpdateAllRatings)),
                 },
             ];
         }
@@ -65,7 +65,7 @@ public partial class AutoScorePlugin : IPlugin
                 new SimpleMenuItem()
                 {
                     Text = "Edit score",
-                    Click = () => CoroutineUtils.Start(() => plugin._core.EditComicScore(primary)),
+                    Click = () => CoroutineUtils.Run(() => plugin._core.EditComicScore(primary)),
                 }
             ];
         }

@@ -171,7 +171,7 @@ public class SyncTitlePlugin : IPlugin
                 new SimpleMenuItem()
                 {
                     Text = "Sync titles",
-                    Click = () => CoroutineUtils.Start(() => plugin.Context.Busy(plugin.SyncTitles)),
+                    Click = () => CoroutineUtils.Run(() => plugin.Context.Busy(plugin.SyncTitles)),
                 }
             ];
         }
