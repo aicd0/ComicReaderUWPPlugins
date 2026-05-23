@@ -4,8 +4,10 @@
 using System;
 using System.ComponentModel;
 
-using ComicReaderUWP.SDK.Common.Utils;
 using ComicReaderUWP.SDK.Plugins.Comic;
+
+using Shared;
+using Shared.Utils;
 
 namespace AutoScore;
 
@@ -383,9 +385,9 @@ internal partial class EditScoreDialogViewModel : INotifyPropertyChanged
 
     private void LoadMode()
     {
-        string mode = AutoScorePlugin.Instance.Context.GetKVDatabase()
-            .GetCollection(KVNames.LIB_SETTINGS)
-            .GetValueOrDefault(KVNames.SettingsKey.DEFAULT_EDIT_SCORE_MODE, string.Empty);
+        string mode = SharedContext.PluginContext.RegistryDatabase
+            .CreateKey(RegistryNames.SETTINGS)
+            .GetValueOrDefault(RegistryNames.SettingsKey.DEFAULT_EDIT_SCORE_MODE, string.Empty);
         ModeSelection = mode switch
         {
             "Draft" => 1,
@@ -401,9 +403,9 @@ internal partial class EditScoreDialogViewModel : INotifyPropertyChanged
             1 => "Draft",
             _ => throw new InvalidOperationException($"Invalid mode selection: {ModeSelection}"),
         };
-        AutoScorePlugin.Instance.Context.GetKVDatabase()
-            .GetCollection(KVNames.LIB_SETTINGS)
-            .Set(KVNames.SettingsKey.DEFAULT_EDIT_SCORE_MODE, mode);
+        SharedContext.PluginContext.RegistryDatabase
+            .CreateKey(RegistryNames.SETTINGS)
+            .Set(RegistryNames.SettingsKey.DEFAULT_EDIT_SCORE_MODE, mode);
     }
 
     private void LoadScore()

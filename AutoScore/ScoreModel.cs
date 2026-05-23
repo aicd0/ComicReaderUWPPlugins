@@ -5,8 +5,10 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using ComicReaderUWP.SDK.Common.Utils;
 using ComicReaderUWP.SDK.Plugins.Comic;
+
+using Shared;
+using Shared.Utils;
 
 namespace AutoScore;
 
@@ -74,8 +76,8 @@ internal class ScoreModel
             S31 = S31,
         };
         string jsonString = JsonSerializer.Serialize(jsonModel);
-        AutoScorePlugin.Instance.Context.GetKVDatabase()
-            .GetCollection(SourceToLibName(source))
+        SharedContext.PluginContext.RegistryDatabase
+            .CreateKey(SourceToLibName(source))
             .Set(comic.Id.ToString(), jsonString);
     }
 
@@ -113,8 +115,8 @@ internal class ScoreModel
 
     public static ScoreModel? Load(IComicModel comic, ScoreSourceEnum source)
     {
-        string? dbString = AutoScorePlugin.Instance.Context.GetKVDatabase()
-            .GetCollection(SourceToLibName(source))
+        string? dbString = SharedContext.PluginContext.RegistryDatabase
+            .CreateKey(SourceToLibName(source))
             .GetValue<string>(comic.Id.ToString());
         if (string.IsNullOrEmpty(dbString))
         {
@@ -191,8 +193,8 @@ internal class ScoreModel
     {
         return source switch
         {
-            ScoreSourceEnum.Main => KVNames.LIB_DETAIL_1,
-            ScoreSourceEnum.Draft => KVNames.LIB_SCORE_DRAFT,
+            ScoreSourceEnum.Main => RegistryNames.DETAIL_1,
+            ScoreSourceEnum.Draft => RegistryNames.SCORE_DRAFT,
             _ => throw new ArgumentException("Invalid score source"),
         };
     }

@@ -1,8 +1,9 @@
 // Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
-using ComicReaderUWP.SDK.Common.DebugTools;
 using ComicReaderUWP.SDK.Plugins;
+
+using Shared;
 
 namespace SamplePlugin;
 
@@ -20,6 +21,7 @@ public class SamplePlugin : IPlugin
 
     public void Initialize(IPluginContext context)
     {
-        Logger.D(TAG, "Hello, world!");
+        SharedContext.Initialize(context);
+        context.Logger.D(TAG, "Hello, world!");
     }
 }

@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 
 using ComicReaderUWP.SDK.Plugins.Comic;
 
+using Shared;
+
 namespace AutoScore;
 
 internal class AutoScoreCore
@@ -24,7 +26,7 @@ internal class AutoScoreCore
         }
 
         var dialog = new EditScoreDialog(comic);
-        await AutoScorePlugin.Instance.Context.EnqueueDialogAsync(dialog);
+        await SharedContext.PluginContext.EnqueueDialogAsync(dialog);
         if (dialog.IsSaveClicked)
         {
             await UpdateRating(comic);
@@ -33,12 +35,12 @@ internal class AutoScoreCore
 
     public async Task UpdateAllRatings()
     {
-        IEnumerable<long> comicIds = await AutoScorePlugin.Instance.Context.SearchComics("%tag.\"Type\" = Manga");
+        IEnumerable<long> comicIds = await SharedContext.PluginContext.SearchComics("%tag.\"Type\" = Manga");
 
         List<IComicModel> updatingComics = [];
         foreach (long comicId in comicIds)
         {
-            IComicModel? comic = await AutoScorePlugin.Instance.Context.GetComic(comicId);
+            IComicModel? comic = await SharedContext.PluginContext.GetComic(comicId);
             if (comic is null)
             {
                 continue;

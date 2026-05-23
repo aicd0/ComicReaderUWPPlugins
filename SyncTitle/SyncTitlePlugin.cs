@@ -8,14 +8,16 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-using ComicReaderUWP.SDK.Common.Utils;
-using ComicReaderUWP.SDK.DataModels;
+using ComicReaderUWP.SDK.Models;
 using ComicReaderUWP.SDK.Plugins;
 using ComicReaderUWP.SDK.Plugins.Comic;
 using ComicReaderUWP.SDK.Plugins.Common;
 using ComicReaderUWP.SDK.Plugins.Menu;
 
 using Microsoft.UI.Xaml.Controls;
+
+using Shared;
+using Shared.Utils;
 
 namespace SyncTitle;
 
@@ -29,23 +31,20 @@ public class SyncTitlePlugin : IPlugin
 
     public int MinorVersion => 0;
 
-    private IPluginContext? _context;
-    private IPluginContext Context => _context ?? throw new InvalidOperationException("Plugin not initialized.");
-
     public void Initialize(IPluginContext context)
     {
-        _context = context;
+        SharedContext.Initialize(context);
         context.SetMainPageMoreMenuItemCreator(new MainPageMoreMenuItemCreator(this));
     }
 
     private async Task SyncTitles()
     {
-        IEnumerable<long> ids = await Context.SearchComics(string.Empty);
+        IEnumerable<long> ids = await SharedContext.PluginContext.SearchComics(string.Empty);
         List<IComicModel> failedComics = [];
         List<Tuple<IComicModel, string>> comicToNewPath = [];
         foreach (long id in ids)
         {
-            IComicModel? comic = await Context.GetComic(id);
+            IComicModel? comic = await SharedContext.PluginContext.GetComic(id);
             if (comic is null || comic.IsHidden)
             {
                 continue;
@@ -102,7 +101,7 @@ public class SyncTitlePlugin : IPlugin
                 .SetPrimaryButtonText("OK")
                 .SetSecondaryButtonText("Cancel")
                 .Build();
-            if ((await Context.EnqueueDialogAsync(options)).Result != ContentDialogResult.Primary)
+            if ((await SharedContext.PluginContext.EnqueueDialogAsync(options)).Result != ContentDialogResult.Primary)
             {
                 return;
             }
@@ -132,7 +131,7 @@ public class SyncTitlePlugin : IPlugin
                 .SetContent(stringBuilder.ToString())
                 .SetPrimaryButtonText("OK")
                 .Build();
-            await Context.EnqueueDialogAsync(options);
+            await SharedContext.PluginContext.EnqueueDialogAsync(options);
         }
     }
 
@@ -171,7 +170,7 @@ public class SyncTitlePlugin : IPlugin
                 new SimpleMenuItem()
                 {
                     Text = "Sync titles",
-                    Click = () => CoroutineUtils.Run(() => plugin.Context.Busy(plugin.SyncTitles)),
+                    Click = () => CoroutineUtils.Run(() => SharedContext.PluginContext.Busy(plugin.SyncTitles)),
                 }
             ];
         }

@@ -5,6 +5,8 @@ using ComicReaderUWP.SDK.Plugins.Comic;
 
 using Microsoft.UI.Xaml.Controls;
 
+using Shared;
+
 namespace AutoScore;
 
 internal sealed partial class EditScoreDialog : ContentDialog
@@ -119,7 +121,7 @@ internal sealed partial class EditScoreDialog : ContentDialog
         }
 
         _contentLoaded = true;
-        string resourceFolderPath = AutoScorePlugin.Instance.Context.ResourceFolderPath;
+        string resourceFolderPath = SharedContext.PluginContext.ResourceFolderPath;
         var resourceLocator = new System.Uri($"ms-appx:///{resourceFolderPath}/AutoScore/EditScoreDialog.xaml");
         Microsoft.UI.Xaml.Application.LoadComponent(this, resourceLocator, Microsoft.UI.Xaml.Controls.Primitives.ComponentResourceLocation.Nested);
     }
