@@ -1,38 +1,33 @@
 // Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
-using System;
 using System.Collections.Generic;
+
+using AutoScore.UI;
+using AutoScore.UI.Utils;
 
 using ComicReaderUWP.SDK.Plugins;
 using ComicReaderUWP.SDK.Plugins.Comic;
 using ComicReaderUWP.SDK.Plugins.Common;
 using ComicReaderUWP.SDK.Plugins.Menu;
 
-using Shared;
-using Shared.Utils;
-
 namespace AutoScore;
 
 public partial class AutoScorePlugin : IPlugin
 {
-    private static AutoScorePlugin? _instance = null;
-    public static AutoScorePlugin Instance => _instance ?? throw new InvalidOperationException("Plugin not initialized.");
-
     public string Name => "AutoScore";
 
     public string Publisher => "aicd0";
 
-    public int MajorVersion => 1;
+    public string Version => "1.0";
 
-    public int MinorVersion => 2;
+    public IReadOnlyCollection<string> SharedAssemblies => ["AutoScore.UI"];
 
     private readonly AutoScoreCore _core = new();
 
     public void Initialize(IPluginContext context)
     {
-        _instance = this;
-        SharedContext.Initialize(context);
+        PluginService.Initialize(context);
         context.SetMainPageMoreMenuItemCreator(new MainPageMoreMenuItemCreator(this));
         context.SetComicMenuItemCreator(new ComicMoreMenuItemCreator(this));
         context.RegisterComicVirtualProperty(new RankScoreProperty());
@@ -50,7 +45,7 @@ public partial class AutoScorePlugin : IPlugin
                 new SimpleMenuItem()
                 {
                     Text = "Update scores",
-                    Click = () => CoroutineUtils.Run(() => SharedContext.PluginContext.Busy(plugin._core.UpdateAllRatings)),
+                    Click = () => CoroutineUtils.Run(() => PluginService.PluginContext.Busy(plugin._core.UpdateAllRatings)),
                 },
             ];
         }

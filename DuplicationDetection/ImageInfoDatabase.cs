@@ -14,7 +14,7 @@ internal class ImageInfoDatabase(IRegistryDatabase database)
     public bool TryGetImageInfo(string key, [NotNullWhen(true)] out ImageInfo? imageInfo)
     {
         IRegistryKey regKey = database.CreateKey(RegistryNames.IMAGE_INFO);
-        if (!regKey.TryGet<string>(key, out string? json))
+        if (!regKey.TryGet(key, out string? json))
         {
             imageInfo = null;
             return false;

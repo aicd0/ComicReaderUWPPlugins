@@ -11,9 +11,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ComicReaderUWP.SDK" Version="1.3.3" />
+    <PackageReference Include="ComicReaderUWP.SDK" Version="1.3.9" />
   </ItemGroup>
 
-  <Import Project="..\Shared\Shared.projitems" Label="Shared" />
+  <ItemGroup>
+    <ProjectReference Include="..\AutoScore.UI\AutoScore.UI.csproj" />
+  </ItemGroup>
 
 </Project>

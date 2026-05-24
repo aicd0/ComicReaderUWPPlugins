@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncTitle", "SyncTitle\Sync
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DuplicationDetection", "DuplicationDetection\DuplicationDetection.csproj", "{E9F5CAB6-21E8-D103-2AC7-E7D63F2E8A53}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Shared", "Shared\Shared.shproj", "{60866CDD-43B9-483A-B52E-9266E825AF0F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoScore.UI", "AutoScore.UI\AutoScore.UI.csproj", "{94571DF0-3866-4BF0-AE02-F8B864F634FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,18 +35,15 @@ Global
 		{E9F5CAB6-21E8-D103-2AC7-E7D63F2E8A53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E9F5CAB6-21E8-D103-2AC7-E7D63F2E8A53}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E9F5CAB6-21E8-D103-2AC7-E7D63F2E8A53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94571DF0-3866-4BF0-AE02-F8B864F634FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94571DF0-3866-4BF0-AE02-F8B864F634FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94571DF0-3866-4BF0-AE02-F8B864F634FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94571DF0-3866-4BF0-AE02-F8B864F634FF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {133D3229-F2DA-4A36-AA12-7FB3477680BF}
-	EndGlobalSection
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Shared\Shared.projitems*{60866cdd-43b9-483a-b52e-9266e825af0f}*SharedItemsImports = 13
-		Shared\Shared.projitems*{6583ca10-50be-4161-94e4-e5d636883f55}*SharedItemsImports = 5
-		Shared\Shared.projitems*{d2d8fc67-1d35-4605-8609-80b80bc6dd26}*SharedItemsImports = 5
-		Shared\Shared.projitems*{e9f5cab6-21e8-d103-2ac7-e7d63f2e8a53}*SharedItemsImports = 5
-		Shared\Shared.projitems*{fe7a1be9-8107-4c1e-a676-eaeaf4e16fe4}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

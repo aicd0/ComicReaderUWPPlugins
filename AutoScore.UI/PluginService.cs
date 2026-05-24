@@ -5,9 +5,9 @@ using System;
 
 using ComicReaderUWP.SDK.Plugins;
 
-namespace Shared;
+namespace AutoScore.UI;
 
-internal static class SharedContext
+public static class PluginService
 {
     private static IPluginContext? _pluginContext;
     public static IPluginContext PluginContext => _pluginContext ?? throw new InvalidOperationException("Plugin not initialized.");

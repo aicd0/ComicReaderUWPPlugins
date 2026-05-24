@@ -3,7 +3,7 @@
 
 using ComicReaderUWP.SDK.Models;
 
-namespace Shared.Utils;
+namespace SyncTitle.Utils;
 
 internal static class Extensions
 {

@@ -1,9 +1,9 @@
 // Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
-using ComicReaderUWP.SDK.Plugins;
+using System.Collections.Generic;
 
-using Shared;
+using ComicReaderUWP.SDK.Plugins;
 
 namespace SamplePlugin;
 
@@ -15,13 +15,12 @@ public class SamplePlugin : IPlugin
 
     public string Publisher => "aicd0";
 
-    public int MajorVersion => 1;
+    public string Version => "1.0";
 
-    public int MinorVersion => 0;
+    public IReadOnlyCollection<string> SharedAssemblies => [];
 
     public void Initialize(IPluginContext context)
     {
-        SharedContext.Initialize(context);
         context.Logger.D(TAG, "Hello, world!");
     }
 }

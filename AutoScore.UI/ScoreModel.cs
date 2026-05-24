@@ -5,14 +5,13 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using AutoScore.UI.Utils;
+
 using ComicReaderUWP.SDK.Plugins.Comic;
 
-using Shared;
-using Shared.Utils;
+namespace AutoScore.UI;
 
-namespace AutoScore;
-
-internal class ScoreModel
+public class ScoreModel
 {
     public const int MAX_SCORE = 1188;
 
@@ -76,7 +75,7 @@ internal class ScoreModel
             S31 = S31,
         };
         string jsonString = JsonSerializer.Serialize(jsonModel);
-        SharedContext.PluginContext.RegistryDatabase
+        PluginService.PluginContext.RegistryDatabase
             .CreateKey(SourceToLibName(source))
             .Set(comic.Id.ToString(), jsonString);
     }
@@ -115,7 +114,7 @@ internal class ScoreModel
 
     public static ScoreModel? Load(IComicModel comic, ScoreSourceEnum source)
     {
-        string? dbString = SharedContext.PluginContext.RegistryDatabase
+        string? dbString = PluginService.PluginContext.RegistryDatabase
             .CreateKey(SourceToLibName(source))
             .GetValue<string>(comic.Id.ToString());
         if (string.IsNullOrEmpty(dbString))

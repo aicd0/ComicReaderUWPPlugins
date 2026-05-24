@@ -1,17 +1,17 @@
 // Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
+using AutoScore.UI;
+
 using ComicReaderUWP.SDK.Plugins.Comic;
 
 using Microsoft.UI.Xaml.Controls;
 
-using Shared;
-
 namespace AutoScore;
 
-internal sealed partial class EditScoreDialog : ContentDialog
+public sealed partial class EditScoreDialog : ContentDialog
 {
-    public EditScoreDialogViewModel ViewModel = new();
+    internal EditScoreDialogViewModel ViewModel = new();
 
     public bool IsSaveClicked { get; private set; } = false;
 
@@ -121,8 +121,8 @@ internal sealed partial class EditScoreDialog : ContentDialog
         }
 
         _contentLoaded = true;
-        string resourceFolderPath = SharedContext.PluginContext.ResourceFolderPath;
-        var resourceLocator = new System.Uri($"ms-appx:///{resourceFolderPath}/AutoScore/EditScoreDialog.xaml");
+        string resourceFolderPath = PluginService.PluginContext.ResourceFolderPath;
+        var resourceLocator = new System.Uri($"ms-appx:///{resourceFolderPath}/AutoScore.UI/EditScoreDialog.xaml");
         Microsoft.UI.Xaml.Application.LoadComponent(this, resourceLocator, Microsoft.UI.Xaml.Controls.Primitives.ComponentResourceLocation.Nested);
     }
 }

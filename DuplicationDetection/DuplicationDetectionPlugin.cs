@@ -14,8 +14,7 @@ using ComicReaderUWP.SDK.Plugins.Comic;
 using ComicReaderUWP.SDK.Plugins.Common;
 using ComicReaderUWP.SDK.Plugins.Menu;
 
-using Shared;
-using Shared.Utils;
+using DuplicationDetection.Utils;
 
 namespace DuplicationDetection;
 
@@ -25,13 +24,13 @@ public class DuplicationDetectionPlugin : IPlugin
 
     public string Publisher => "aicd0";
 
-    public int MajorVersion => 1;
+    public string Version => "1.0";
 
-    public int MinorVersion => 0;
+    public IReadOnlyCollection<string> SharedAssemblies => [];
 
     public void Initialize(IPluginContext context)
     {
-        SharedContext.Initialize(context);
+        PluginService.Initialize(context);
         context.SetComicMenuItemCreator(new MainPageMoreMenuItemCreator(this));
     }
 
@@ -45,11 +44,11 @@ public class DuplicationDetectionPlugin : IPlugin
                 .SetContent("Failed to open the comic.")
                 .SetPrimaryButtonText("OK")
                 .Build();
-            await SharedContext.PluginContext.EnqueueDialogAsync(options);
+            await PluginService.PluginContext.EnqueueDialogAsync(options);
             return;
         }
 
-        ImageInfoDatabase database = new(SharedContext.PluginContext.RegistryDatabase);
+        ImageInfoDatabase database = new(PluginService.PluginContext.RegistryDatabase);
         CoenM.ImageHash.HashAlgorithms.PerceptualHash algorithm = new();
         int imageCount = connection.ImageCount;
         List<ImageModel> detectingImages = [];
@@ -160,7 +159,7 @@ public class DuplicationDetectionPlugin : IPlugin
                 .SetContent(result)
                 .SetPrimaryButtonText("OK")
                 .Build();
-            await SharedContext.PluginContext.EnqueueDialogAsync(options);
+            await PluginService.PluginContext.EnqueueDialogAsync(options);
         }
     }
 
@@ -183,7 +182,7 @@ public class DuplicationDetectionPlugin : IPlugin
                 new SimpleMenuItem()
                 {
                     Text = "Detect duplication",
-                    Click = () => CoroutineUtils.Run(() => SharedContext.PluginContext.Busy(async () =>
+                    Click = () => CoroutineUtils.Run(() => PluginService.PluginContext.Busy(async () =>
                     {
                         await plugin.DetectDuplication(primary);
                     })),

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
-namespace AutoScore;
+namespace AutoScore.UI;
 
 internal static class RegistryNames
 {

@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Shared.Utils;
+namespace SyncTitle.Utils;
 
 internal static class CoroutineUtils
 {
@@ -17,7 +17,7 @@ internal static class CoroutineUtils
             AggregateException? exception = t.Exception;
             if (exception is not null)
             {
-                SharedContext.PluginContext.Logger.F(TAG, exception.Message, exception);
+                PluginService.PluginContext.Logger.F(TAG, exception.Message, exception);
             }
         });
     }

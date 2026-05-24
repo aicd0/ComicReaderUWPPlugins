@@ -13,9 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="CoenM.ImageSharp.ImageHash" Version="1.3.6" />
-    <PackageReference Include="ComicReaderUWP.SDK" Version="1.3.3" />
+    <PackageReference Include="ComicReaderUWP.SDK" Version="1.3.9" />
   </ItemGroup>
-
-  <Import Project="..\Shared\Shared.projitems" Label="Shared" />
 
 </Project>
