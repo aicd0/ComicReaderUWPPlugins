@@ -484,9 +484,9 @@ internal partial class EditScoreDialogViewModel : INotifyPropertyChanged
         newScoreModel.S31 = _s31Selection;
         newScoreModel.IsRated = _isRatingVisible;
 
-        int oldScore = oldScoreModel.GetAbsoluteScore();
-        int newScore = newScoreModel.GetAbsoluteScore();
-        Description = $"Old score: {oldScore}\nNew score: {newScore}";
+        int oldScore = CalculateRelativeScore(oldScoreModel.GetAbsoluteScore());
+        int newScore = CalculateRelativeScore(newScoreModel.GetAbsoluteScore());
+        Description = $"Old score: {oldScore}/{ToRatingString(oldScore)}\nNew score: {newScore}/{ToRatingString(newScore)}";
 
         if (ModeSelection == 1)
         {
@@ -504,5 +504,18 @@ internal partial class EditScoreDialogViewModel : INotifyPropertyChanged
         }
 
         scoreModel.Save(comic, ScoreModel.ScoreSourceEnum.Draft);
+    }
+
+    private static int CalculateRelativeScore(int absoluteScore)
+    {
+        float scoreFloat = absoluteScore * 100F / ScoreModel.MAX_SCORE;
+        int score = (int)Math.Round(scoreFloat, MidpointRounding.AwayFromZero);
+        score = Math.Clamp(score, 0, 100);
+        return score;
+    }
+
+    private static string ToRatingString(int score)
+    {
+        return Math.Round(score * 0.05F, 1, MidpointRounding.AwayFromZero).ToString("0.#");
     }
 }

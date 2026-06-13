@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 using ComicReaderUWP.SDK.Models;
 using ComicReaderUWP.SDK.Plugins;
 using ComicReaderUWP.SDK.Plugins.Comic;
-using ComicReaderUWP.SDK.Plugins.Common;
-using ComicReaderUWP.SDK.Plugins.Menu;
+using ComicReaderUWP.SDK.Plugins.UI;
+using ComicReaderUWP.SDK.Plugins.UI.Menu;
 
 using DuplicationDetection.Utils;
 
@@ -31,7 +31,7 @@ public class DuplicationDetectionPlugin : IPlugin
     public void Initialize(IPluginContext context)
     {
         PluginService.Initialize(context);
-        context.SetComicMenuItemCreator(new MainPageMoreMenuItemCreator(this));
+        context.ComicMenuItemCreator = new MainPageMoreMenuItemCreator(this);
     }
 
     private async Task DetectDuplication(IComicModel comic)
@@ -44,7 +44,7 @@ public class DuplicationDetectionPlugin : IPlugin
                 .SetContent("Failed to open the comic.")
                 .SetPrimaryButtonText("OK")
                 .Build();
-            await PluginService.PluginContext.EnqueueDialogAsync(options);
+            await PluginService.PluginContext.EnqueueDialog(options);
             return;
         }
 
@@ -159,7 +159,7 @@ public class DuplicationDetectionPlugin : IPlugin
                 .SetContent(result)
                 .SetPrimaryButtonText("OK")
                 .Build();
-            await PluginService.PluginContext.EnqueueDialogAsync(options);
+            await PluginService.PluginContext.EnqueueDialog(options);
         }
     }
 
@@ -182,7 +182,7 @@ public class DuplicationDetectionPlugin : IPlugin
                 new SimpleMenuItem()
                 {
                     Text = "Detect duplication",
-                    Click = () => CoroutineUtils.Run(() => PluginService.PluginContext.Busy(async () =>
+                    Click = () => CoroutineUtils.Run(() => PluginService.PluginContext.WithBusyState(async () =>
                     {
                         await plugin.DetectDuplication(primary);
                     })),

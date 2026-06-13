@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 using ComicReaderUWP.SDK.Models;
 using ComicReaderUWP.SDK.Plugins;
 using ComicReaderUWP.SDK.Plugins.Comic;
-using ComicReaderUWP.SDK.Plugins.Common;
-using ComicReaderUWP.SDK.Plugins.Menu;
+using ComicReaderUWP.SDK.Plugins.UI;
+using ComicReaderUWP.SDK.Plugins.UI.Menu;
 
 using Microsoft.UI.Xaml.Controls;
 
@@ -33,7 +33,7 @@ public class SyncTitlePlugin : IPlugin
     public void Initialize(IPluginContext context)
     {
         PluginService.Initialize(context);
-        context.SetMainPageMoreMenuItemCreator(new MainPageMoreMenuItemCreator(this));
+        context.MainPageMoreMenuItemCreator = new MainPageMoreMenuItemCreator(this);
     }
 
     private async Task SyncTitles()
@@ -100,7 +100,7 @@ public class SyncTitlePlugin : IPlugin
                 .SetPrimaryButtonText("OK")
                 .SetSecondaryButtonText("Cancel")
                 .Build();
-            if ((await PluginService.PluginContext.EnqueueDialogAsync(options)).Result != ContentDialogResult.Primary)
+            if ((await PluginService.PluginContext.EnqueueDialog(options)).Result != ContentDialogResult.Primary)
             {
                 return;
             }
@@ -130,7 +130,7 @@ public class SyncTitlePlugin : IPlugin
                 .SetContent(stringBuilder.ToString())
                 .SetPrimaryButtonText("OK")
                 .Build();
-            await PluginService.PluginContext.EnqueueDialogAsync(options);
+            await PluginService.PluginContext.EnqueueDialog(options);
         }
     }
 
@@ -169,7 +169,7 @@ public class SyncTitlePlugin : IPlugin
                 new SimpleMenuItem()
                 {
                     Text = "Sync titles",
-                    Click = () => CoroutineUtils.Run(() => PluginService.PluginContext.Busy(plugin.SyncTitles)),
+                    Click = () => CoroutineUtils.Run(() => PluginService.PluginContext.WithBusyState(plugin.SyncTitles)),
                 }
             ];
         }

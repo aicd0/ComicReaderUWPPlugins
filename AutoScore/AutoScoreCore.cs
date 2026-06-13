@@ -26,7 +26,7 @@ internal class AutoScoreCore
         }
 
         var dialog = new EditScoreDialog(comic);
-        await PluginService.PluginContext.EnqueueDialogAsync(dialog);
+        await PluginService.PluginContext.EnqueueDialog(dialog);
         if (dialog.IsSaveClicked)
         {
             await UpdateRating(comic);

@@ -8,8 +8,8 @@ using AutoScore.UI.Utils;
 
 using ComicReaderUWP.SDK.Plugins;
 using ComicReaderUWP.SDK.Plugins.Comic;
-using ComicReaderUWP.SDK.Plugins.Common;
-using ComicReaderUWP.SDK.Plugins.Menu;
+using ComicReaderUWP.SDK.Plugins.UI;
+using ComicReaderUWP.SDK.Plugins.UI.Menu;
 
 namespace AutoScore;
 
@@ -28,8 +28,8 @@ public partial class AutoScorePlugin : IPlugin
     public void Initialize(IPluginContext context)
     {
         PluginService.Initialize(context);
-        context.SetMainPageMoreMenuItemCreator(new MainPageMoreMenuItemCreator(this));
-        context.SetComicMenuItemCreator(new ComicMoreMenuItemCreator(this));
+        context.MainPageMoreMenuItemCreator = new MainPageMoreMenuItemCreator(this);
+        context.ComicMenuItemCreator = new ComicMoreMenuItemCreator(this);
         context.RegisterComicVirtualProperty(new RankScoreProperty());
     }
 
@@ -45,7 +45,7 @@ public partial class AutoScorePlugin : IPlugin
                 new SimpleMenuItem()
                 {
                     Text = "Update scores",
-                    Click = () => CoroutineUtils.Run(() => PluginService.PluginContext.Busy(plugin._core.UpdateAllRatings)),
+                    Click = () => CoroutineUtils.Run(() => PluginService.PluginContext.WithBusyState(plugin._core.UpdateAllRatings)),
                 },
             ];
         }
