@@ -5,7 +5,9 @@ using AutoScore.UI;
 
 using ComicReaderUWP.SDK.Plugins.Comic;
 
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 
 namespace AutoScore;
 
@@ -21,19 +23,32 @@ public sealed partial class EditScoreDialog : ContentDialog
         ViewModel.Initialize(comic);
     }
 
-    private void ResetButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void InitializeComponentForPlugin()
+    {
+        if (_contentLoaded)
+        {
+            return;
+        }
+
+        _contentLoaded = true;
+        string resourceFolderPath = PluginService.PluginContext.ResourceFolderPath;
+        var resourceLocator = new System.Uri($"ms-appx:///{resourceFolderPath}/AutoScore.UI/EditScoreDialog.xaml");
+        Application.LoadComponent(this, resourceLocator, ComponentResourceLocation.Nested);
+    }
+
+    private void ResetButton_Click(object sender, RoutedEventArgs e)
     {
         ViewModel.ResetScore();
     }
 
-    private void SaveButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void SaveButton_Click(object sender, RoutedEventArgs e)
     {
         ViewModel.Save();
         IsSaveClicked = true;
         Hide();
     }
 
-    private void CancelButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void CancelButton_Click(object sender, RoutedEventArgs e)
     {
         Hide();
     }
@@ -108,21 +123,8 @@ public sealed partial class EditScoreDialog : ContentDialog
         ViewModel.SetS31(((RadioButtons)sender).SelectedIndex);
     }
 
-    private void RatingVisibilityCheckBox_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    private void RatingVisibilityCheckBox_Click(object sender, RoutedEventArgs e)
     {
         ViewModel.SetRatingVisible(((CheckBox)sender).IsChecked ?? false);
-    }
-
-    private void InitializeComponentForPlugin()
-    {
-        if (_contentLoaded)
-        {
-            return;
-        }
-
-        _contentLoaded = true;
-        string resourceFolderPath = PluginService.PluginContext.ResourceFolderPath;
-        var resourceLocator = new System.Uri($"ms-appx:///{resourceFolderPath}/AutoScore.UI/EditScoreDialog.xaml");
-        Microsoft.UI.Xaml.Application.LoadComponent(this, resourceLocator, Microsoft.UI.Xaml.Controls.Primitives.ComponentResourceLocation.Nested);
     }
 }

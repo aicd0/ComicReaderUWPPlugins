@@ -39,7 +39,7 @@ public partial class AutoScorePlugin : IPlugin
 
     private class MainPageMoreMenuItemCreator(AutoScorePlugin plugin) : ICommonMenuItemCreator
     {
-        public IEnumerable<IMenuItem> CreateMenuItems(IUIContext uiContext)
+        public IEnumerable<IMenuItem> CreateMenuItems(IWindowContext windowContext)
         {
             return [
                 new SimpleMenuItem()
@@ -53,7 +53,7 @@ public partial class AutoScorePlugin : IPlugin
 
     private class ComicMoreMenuItemCreator(AutoScorePlugin plugin) : IComicMenuItemCreator
     {
-        public IEnumerable<IMenuItem> CreateMenuItems(IUIContext uiContext, IComicModel primary, IEnumerable<IComicModel> selection)
+        public IEnumerable<IMenuItem> CreateMenuItems(IWindowContext windowContext, IComicModel primary, IEnumerable<IComicModel> selection)
         {
             return [
                 new SimpleMenuItem()

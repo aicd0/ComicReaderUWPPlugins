@@ -163,7 +163,7 @@ public class SyncTitlePlugin : IPlugin
 
     private class MainPageMoreMenuItemCreator(SyncTitlePlugin plugin) : ICommonMenuItemCreator
     {
-        public IEnumerable<IMenuItem> CreateMenuItems(IUIContext uiContext)
+        public IEnumerable<IMenuItem> CreateMenuItems(IWindowContext windowContext)
         {
             return [
                 new SimpleMenuItem()

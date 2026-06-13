@@ -176,7 +176,7 @@ public class DuplicationDetectionPlugin : IPlugin
 
     private class MainPageMoreMenuItemCreator(DuplicationDetectionPlugin plugin) : IComicMenuItemCreator
     {
-        public IEnumerable<IMenuItem> CreateMenuItems(IUIContext uiContext, IComicModel primary, IEnumerable<IComicModel> selection)
+        public IEnumerable<IMenuItem> CreateMenuItems(IWindowContext windowContext, IComicModel primary, IEnumerable<IComicModel> selection)
         {
             return [
                 new SimpleMenuItem()

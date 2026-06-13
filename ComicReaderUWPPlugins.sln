@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DuplicationDetection", "Dup
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoScore.UI", "AutoScore.UI\AutoScore.UI.csproj", "{94571DF0-3866-4BF0-AE02-F8B864F634FF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EHLinker", "EHLinker\EHLinker.csproj", "{8305BC72-0A1E-439C-B882-CC748851872E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EHLinker.UI", "EHLinker.UI\EHLinker.UI.csproj", "{44371EC7-2D5B-4854-B6B4-A2464EA7C51F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +43,14 @@ Global
 		{94571DF0-3866-4BF0-AE02-F8B864F634FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94571DF0-3866-4BF0-AE02-F8B864F634FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94571DF0-3866-4BF0-AE02-F8B864F634FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8305BC72-0A1E-439C-B882-CC748851872E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8305BC72-0A1E-439C-B882-CC748851872E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8305BC72-0A1E-439C-B882-CC748851872E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8305BC72-0A1E-439C-B882-CC748851872E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44371EC7-2D5B-4854-B6B4-A2464EA7C51F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44371EC7-2D5B-4854-B6B4-A2464EA7C51F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44371EC7-2D5B-4854-B6B4-A2464EA7C51F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44371EC7-2D5B-4854-B6B4-A2464EA7C51F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
