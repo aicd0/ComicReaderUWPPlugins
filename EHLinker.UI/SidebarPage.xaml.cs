@@ -55,7 +55,7 @@ public sealed partial class SidebarPage : Page
     private void Page_Loaded(object sender, RoutedEventArgs e)
     {
         NavigationBundle.WindowContext.ReadingComicChanged += WindowContext_ReadingComicChanged;
-        TabSelectorBar.SelectedItem = TabSelectorBarItemLinker;
+        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         ViewModel.Initialize();
         ViewModel.LoadComic(NavigationBundle.WindowContext.ReadingComic);
     }
@@ -63,6 +63,30 @@ public sealed partial class SidebarPage : Page
     private void Page_Unloaded(object sender, RoutedEventArgs e)
     {
         NavigationBundle.WindowContext.ReadingComicChanged -= WindowContext_ReadingComicChanged;
+        ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(SidebarPageViewModel.SelectedTabIndex):
+                switch (ViewModel.SelectedTabIndex)
+                {
+                    case 0:
+                        TabSelectorBar.SelectedItem = TabSelectorBarItemLinker;
+                        break;
+                    case 1:
+                        TabSelectorBar.SelectedItem = TabSelectorBarItemInfo;
+                        break;
+                    default:
+                        break;
+                }
+
+                break;
+            default:
+                break;
+        }
     }
 
     private void WindowContext_ReadingComicChanged(IComicModel? comic)
@@ -76,12 +100,12 @@ public sealed partial class SidebarPage : Page
         if (selectedItem == TabSelectorBarItemLinker)
         {
             LinkerTabGrid.Visibility = Visibility.Visible;
-            CommentsTabGrid.Visibility = Visibility.Collapsed;
+            InfoTabGrid.Visibility = Visibility.Collapsed;
         }
-        else if (selectedItem == TabSelectorBarItemComments)
+        else if (selectedItem == TabSelectorBarItemInfo)
         {
             LinkerTabGrid.Visibility = Visibility.Collapsed;
-            CommentsTabGrid.Visibility = Visibility.Visible;
+            InfoTabGrid.Visibility = Visibility.Visible;
         }
     }
 
@@ -98,5 +122,20 @@ public sealed partial class SidebarPage : Page
     private void SearchComicNextPageButton_Click(object sender, RoutedEventArgs e)
     {
         ViewModel.SearchComicsNextPage();
+    }
+
+    private void SearchComicResultListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (e.AddedItems.Count == 0)
+        {
+            return;
+        }
+
+        if (e.AddedItems[0] is not ComicSearchResultItemViewModel model)
+        {
+            return;
+        }
+
+        ViewModel.LinkComic(model.Source.Link);
     }
 }

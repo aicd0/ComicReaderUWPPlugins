@@ -13,7 +13,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="ComicReaderUWP.SDK" Version="1.3.12" />
-		<PackageReference Include="Microsoft.Playwright" Version="1.60.0" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.12.4" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -38,25 +38,18 @@
 			<FilesToZip Include="$(OutputPath)EHLinker.pri" />
 			<FilesToZip Include="$(OutputPath)EHLinker.UI.dll" />
 			<FilesToZip Include="$(OutputPath)EHLinker.UI.pri" />
-			<FilesToZip Include="$(OutputPath)Microsoft.Bcl.AsyncInterfaces.dll" />
-			<FilesToZip Include="$(OutputPath)Microsoft.Playwright.dll" />
+			<FilesToZip Include="$(OutputPath)HtmlAgilityPack.dll" />
 			<FilesToZip Include="$(OutputPath)PluginMeta.json" />
 		</ItemGroup>
 		<Copy SourceFiles="@(FilesToZip)" DestinationFolder="$(ZipStagingDir)\%(RecursiveDir)" />
 		
 		<ItemGroup>
 			<FilesToZip Remove="@(FilesToZip)" />
-			<FilesToZip Include="$(OutputPath)EHLinker\**\*" />
-		</ItemGroup>
-		<Copy SourceFiles="@(FilesToZip)" DestinationFolder="$(ZipStagingDir)\EHLinker\%(RecursiveDir)" />
-
-		<ItemGroup>
-			<FilesToZip Remove="@(FilesToZip)" />
 			<FilesToZip Include="$(OutputPath)EHLinker.UI\**\*" />
 		</ItemGroup>
 		<Copy SourceFiles="@(FilesToZip)" DestinationFolder="$(ZipStagingDir)\EHLinker.UI\%(RecursiveDir)" />
 		
-		<Delete Files="$(OutputPath)EHLinker.zip"  />
+		<Delete Files="$(OutputPath)EHLinker.zip" />
 		<ZipDirectory SourceDirectory="$(ZipStagingDir)" DestinationFile="$(OutputPath)EHLinker.zip" />
 	</Target>
 

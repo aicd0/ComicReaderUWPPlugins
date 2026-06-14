@@ -12,4 +12,6 @@ public interface IPluginAbility
     Task<ComicSearchResult> SearchComicsByKeyword(string keyword);
 
     Task<ComicSearchResult> SearchComicsByLink(string link);
+
+    Task<ComicDetailedInfo> RequestComicInfo(string link);
 }
