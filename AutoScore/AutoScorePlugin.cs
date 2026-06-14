@@ -15,17 +15,15 @@ namespace AutoScore;
 
 public partial class AutoScorePlugin : IPlugin
 {
-    public string Name => "AutoScore";
+    string IPlugin.Name => "AutoScore";
 
-    public string Publisher => "aicd0";
+    string IPlugin.Publisher => "aicd0";
 
-    public string Version => "1.0";
-
-    public IReadOnlyCollection<string> SharedAssemblies => ["AutoScore.UI"];
+    string IPlugin.Version => "1.0";
 
     private readonly AutoScoreCore _core = new();
 
-    public void Initialize(IPluginContext context)
+    void IPlugin.Initialize(IPluginContext context)
     {
         PluginService.Initialize(context);
         context.MainPageMoreMenuItemCreator = new MainPageMoreMenuItemCreator(this);

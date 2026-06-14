@@ -40,7 +40,65 @@
 
         <Grid Grid.Row="2">
             <Grid x:Name="LinkerTabGrid">
-                <TextBlock x:Name="TestTextBlock" Text="This is linker" />
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0" Orientation="Vertical">
+                    <TextBlock Text="{x:Bind ViewModel.LinkStatusText, Mode=OneWay}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox Grid.Column="0" Text="{x:Bind ViewModel.ComicSearchBoxText, Mode=TwoWay}" />
+                        <Button
+                            Grid.Column="1"
+                            Click="SearchComicButton_Click"
+                            Content="Search" />
+                    </Grid>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button
+                            Grid.Column="0"
+                            Click="SearchComicPreviousPageButton_Click"
+                            Content="Previous"
+                            IsEnabled="{x:Bind ViewModel.SearchComicPreviousPageEnabled, Mode=OneWay}" />
+                        <Button
+                            Grid.Column="1"
+                            Click="SearchComicNextPageButton_Click"
+                            Content="Next"
+                            IsEnabled="{x:Bind ViewModel.SearchComicNextPageEnabled, Mode=OneWay}" />
+                    </Grid>
+                </StackPanel>
+                <ListView Grid.Row="1" ItemsSource="{x:Bind ViewModel.ComicSearchResultItems}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="local:ComicSearchResultItemViewModel">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="{x:Bind Title}" />
+                                <TextBlock
+                                    Grid.Row="1"
+                                    Opacity="0.8"
+                                    Text="{x:Bind Description}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <ListView.ItemContainerStyle>
+                        <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                            <Setter Property="Margin" Value="0" />
+                            <Setter Property="Padding" Value="20,8,12,8" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>
             </Grid>
             <Grid x:Name="CommentsTabGrid">
                 <TextBlock Text="This is comments" />

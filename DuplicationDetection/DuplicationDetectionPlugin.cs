@@ -20,15 +20,13 @@ namespace DuplicationDetection;
 
 public class DuplicationDetectionPlugin : IPlugin
 {
-    public string Name => "DuplicationDetection";
+    string IPlugin.Name => "DuplicationDetection";
 
-    public string Publisher => "aicd0";
+    string IPlugin.Publisher => "aicd0";
 
-    public string Version => "1.0";
+    string IPlugin.Version => "1.0";
 
-    public IReadOnlyCollection<string> SharedAssemblies => [];
-
-    public void Initialize(IPluginContext context)
+    void IPlugin.Initialize(IPluginContext context)
     {
         PluginService.Initialize(context);
         context.ComicMenuItemCreator = new MainPageMoreMenuItemCreator(this);

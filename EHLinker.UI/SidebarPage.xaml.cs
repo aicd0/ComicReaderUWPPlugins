@@ -13,6 +13,8 @@ namespace EHLinker.UI;
 
 public sealed partial class SidebarPage : Page
 {
+    internal SidebarPageViewModel ViewModel { get; } = new();
+
     private IPageNavigationBundle? _navigationBundle;
     private IPageNavigationBundle NavigationBundle => _navigationBundle!;
 
@@ -45,7 +47,7 @@ public sealed partial class SidebarPage : Page
         }
 
         _contentLoaded = true;
-        string resourceFolderPath = PluginService.PluginContext.ResourceFolderPath;
+        string resourceFolderPath = PluginService.Context.ResourceFolderPath;
         var resourceLocator = new System.Uri($"ms-appx:///{resourceFolderPath}/EHLinker.UI/SidebarPage.xaml");
         Application.LoadComponent(this, resourceLocator, ComponentResourceLocation.Nested);
     }
@@ -54,7 +56,8 @@ public sealed partial class SidebarPage : Page
     {
         NavigationBundle.WindowContext.ReadingComicChanged += WindowContext_ReadingComicChanged;
         TabSelectorBar.SelectedItem = TabSelectorBarItemLinker;
-        LoadComic(NavigationBundle.WindowContext.ReadingComic);
+        ViewModel.Initialize();
+        ViewModel.LoadComic(NavigationBundle.WindowContext.ReadingComic);
     }
 
     private void Page_Unloaded(object sender, RoutedEventArgs e)
@@ -64,7 +67,7 @@ public sealed partial class SidebarPage : Page
 
     private void WindowContext_ReadingComicChanged(IComicModel? comic)
     {
-        LoadComic(comic);
+        ViewModel.LoadComic(comic);
     }
 
     private void TabSelectorBar_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
@@ -82,8 +85,18 @@ public sealed partial class SidebarPage : Page
         }
     }
 
-    private void LoadComic(IComicModel? comic)
+    private void SearchComicButton_Click(object sender, RoutedEventArgs e)
     {
-        TestTextBlock.Text = comic?.Title1 ?? "<null>";
+        ViewModel.SearchComics(ViewModel.ComicSearchBoxText);
+    }
+
+    private void SearchComicPreviousPageButton_Click(object sender, RoutedEventArgs e)
+    {
+        ViewModel.SearchComicsPreviousPage();
+    }
+
+    private void SearchComicNextPageButton_Click(object sender, RoutedEventArgs e)
+    {
+        ViewModel.SearchComicsNextPage();
     }
 }

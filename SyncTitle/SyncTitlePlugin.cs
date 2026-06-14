@@ -22,15 +22,13 @@ namespace SyncTitle;
 
 public class SyncTitlePlugin : IPlugin
 {
-    public string Name => "SyncTitle";
+    string IPlugin.Name => "SyncTitle";
 
-    public string Publisher => "aicd0";
+    string IPlugin.Publisher => "aicd0";
 
-    public string Version => "1.0";
+    string IPlugin.Version => "1.0";
 
-    public IReadOnlyCollection<string> SharedAssemblies => [];
-
-    public void Initialize(IPluginContext context)
+    void IPlugin.Initialize(IPluginContext context)
     {
         PluginService.Initialize(context);
         context.MainPageMoreMenuItemCreator = new MainPageMoreMenuItemCreator(this);

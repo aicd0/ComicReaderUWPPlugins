@@ -10,15 +10,19 @@ namespace EHLinker.UI;
 public static class PluginService
 {
     private static IPluginContext? _pluginContext;
-    public static IPluginContext PluginContext => _pluginContext ?? throw new InvalidOperationException("Plugin not initialized.");
+    private static IPluginAbility? _pluginAbility;
 
-    public static void Initialize(IPluginContext pluginContext)
+    public static IPluginContext Context => _pluginContext ?? throw new InvalidOperationException("The plugin is not initialized.");
+    public static IPluginAbility Ability => _pluginAbility ?? throw new InvalidOperationException("The plugin is not initialized.");
+
+    public static void Initialize(IPluginContext pluginContext, IPluginAbility ability)
     {
-        if (_pluginContext is not null)
+        if (_pluginContext is not null || _pluginAbility is not null)
         {
-            throw new InvalidOperationException("Plugin already initialized.");
+            throw new InvalidOperationException("The plugin is already initialized.");
         }
 
         _pluginContext = pluginContext;
+        _pluginAbility = ability;
     }
 }

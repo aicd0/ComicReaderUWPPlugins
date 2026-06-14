@@ -1,8 +1,6 @@
 ﻿// Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Collections.Generic;
-
 using ComicReaderUWP.SDK.Plugins;
 using ComicReaderUWP.SDK.Plugins.UI;
 
@@ -16,17 +14,15 @@ public partial class EHLinkerPlugin : IPlugin
 {
     private const string HOST_SIDEBAR_PAGE = "ehlinker_sidebar";
 
-    public string Name => "EHLinker";
+    string IPlugin.Name => "EHLinker";
 
-    public string Publisher => "aicd0";
+    string IPlugin.Publisher => "aicd0";
 
-    public string Version => "1.0";
+    string IPlugin.Version => "1.0";
 
-    public IReadOnlyCollection<string> SharedAssemblies => ["EHLinker.UI"];
-
-    public void Initialize(IPluginContext context)
+    void IPlugin.Initialize(IPluginContext context)
     {
-        PluginService.Initialize(context);
+        PluginService.Initialize(context, new PluginAbility());
         context.RegisterPage(HOST_SIDEBAR_PAGE, typeof(SidebarPage));
         context.RegisterSidebarPage(new SidebarPageProvider());
     }
