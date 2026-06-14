@@ -1,27 +1,53 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RootNamespace>AutoScore</RootNamespace>
-    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
-    <UseWinUI>true</UseWinUI>
-    <Nullable>enable</Nullable>
-    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+		<RootNamespace>AutoScore</RootNamespace>
+		<RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+		<UseWinUI>true</UseWinUI>
+		<Nullable>enable</Nullable>
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="ComicReaderUWP.SDK" Version="1.3.12" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="ComicReaderUWP.SDK" Version="1.3.12" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\AutoScore.UI\AutoScore.UI.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\AutoScore.UI\AutoScore.UI.csproj" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Update="PluginMeta.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="PluginMeta.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<Target Name="ZipPlugin" AfterTargets="Build">
+		<PropertyGroup>
+			<ZipStagingDir>$(IntermediateOutputPath)ZipStaging\</ZipStagingDir>
+		</PropertyGroup>
+		<RemoveDir Directories="$(ZipStagingDir)" />
+
+		<ItemGroup>
+			<FilesToZip Include="$(OutputPath)AutoScore.deps.json" />
+			<FilesToZip Include="$(OutputPath)AutoScore.dll" />
+			<FilesToZip Include="$(OutputPath)AutoScore.pri" />
+			<FilesToZip Include="$(OutputPath)AutoScore.UI.dll" />
+			<FilesToZip Include="$(OutputPath)AutoScore.UI.pri" />
+			<FilesToZip Include="$(OutputPath)PluginMeta.json" />
+		</ItemGroup>
+		<Copy SourceFiles="@(FilesToZip)" DestinationFolder="$(ZipStagingDir)\%(RecursiveDir)" />
+
+		<ItemGroup>
+			<FilesToZip Remove="@(FilesToZip)" />
+			<FilesToZip Include="$(OutputPath)AutoScore.UI\**\*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(FilesToZip)" DestinationFolder="$(ZipStagingDir)\AutoScore.UI\%(RecursiveDir)" />
+
+		<Delete Files="$(OutputPath)AutoScore.zip"  />
+		<ZipDirectory SourceDirectory="$(ZipStagingDir)" DestinationFile="$(OutputPath)AutoScore.zip" />
+	</Target>
 
 </Project>
