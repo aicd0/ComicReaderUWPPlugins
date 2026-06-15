@@ -30,6 +30,7 @@ public sealed partial class SidebarPage : Page
     public SidebarPage()
     {
         InitializeComponentForPlugin();
+        ViewModel.Initialize();
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -66,7 +67,6 @@ public sealed partial class SidebarPage : Page
         NavigationBundle.WindowContext.ReadingComicChanged += WindowContext_ReadingComicChanged;
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         ViewModel.DisableSearchFilterChecked = PluginService.Context.RegistryDatabase.CreateKey(PluginConstants.REGISTRY_SIDEBAR).GetValueOrDefault(KEY_DISABLE_FILTERS, true);
-        ViewModel.Initialize();
         ViewModel.LoadComic(NavigationBundle.WindowContext.ReadingComic);
     }
 

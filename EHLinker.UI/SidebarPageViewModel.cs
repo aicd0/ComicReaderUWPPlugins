@@ -161,13 +161,21 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
     public ObservableCollection<ComicSearchResultItemViewModel> ComicSearchResultItems { get; } = [];
     public ObservableCollection<CommentItemViewModel> ComicCommentItems { get; } = [];
 
-    private IComicModel? _comic;
+    // Search
+    private SearchArgs? _searchingArgs = null;
     private ComicSearchResult? _lastSearchResult;
+
+    // Comic Link
+    private IComicModel? _comic;
+    private string? _link;
     private ComicDetailedInfo? _comicInfo;
 
     public void Initialize()
     {
-        ClearComic();
+        CoroutineUtils.Run(async () =>
+        {
+            await LoadComicInternal(null);
+        });
     }
 
     public void LoadComic(IComicModel? comic)
@@ -177,73 +185,66 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
             return;
         }
 
-        ClearComic();
-        _comic = comic;
-        UpdateLinkStatus();
-
-        if (comic is not null)
+        CoroutineUtils.Run(async () =>
         {
-            CoroutineUtils.Run(async () =>
-            {
-                ComicSearchBoxText = ExtractSearchKeyword(comic);
-                await RequestComicInfo();
-
-                if (_comicInfo is null)
-                {
-                    SelectedTabIndex = 0;
-                }
-                else
-                {
-                    SelectedTabIndex = 1;
-                }
-            });
-        }
+            await LoadComicInternal(comic);
+        });
     }
 
     public void SearchComics(string keyword, bool disableFilters)
     {
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            return;
+        }
+
+        SearchArgs searchArgs = new()
+        {
+            Keyword = keyword,
+            DisableFilters = disableFilters,
+        };
+
         CoroutineUtils.Run(async () =>
         {
-            ComicSearchResult? result = null;
-            try
-            {
-                result = await PluginService.Ability.SearchComicsByKeyword(keyword, disableFilters);
-            }
-            catch (Exception ex)
-            {
-                ErrorDialogMessage = ex.Message;
-            }
-
-            _lastSearchResult = result;
-            UpdateSearchResult();
+            await SearchComicsInternal(searchArgs);
         });
     }
 
     public void SearchComicsPreviousPage()
     {
+        ComicSearchResult? searchResult = _lastSearchResult;
+        if (searchResult is null || string.IsNullOrEmpty(searchResult.PreviousPageLink))
+        {
+            return;
+        }
+
+        SearchArgs searchArgs = new()
+        {
+            Link = searchResult.PreviousPageLink,
+        };
+
         CoroutineUtils.Run(async () =>
         {
-            ComicSearchResult? searchResult = _lastSearchResult;
-            if (searchResult is null || string.IsNullOrEmpty(searchResult.PreviousPageLink))
-            {
-                return;
-            }
-
-            await SearchComicsByLink(searchResult.PreviousPageLink);
+            await SearchComicsInternal(searchArgs);
         });
     }
 
     public void SearchComicsNextPage()
     {
+        ComicSearchResult? searchResult = _lastSearchResult;
+        if (searchResult is null || string.IsNullOrEmpty(searchResult.NextPageLink))
+        {
+            return;
+        }
+
+        SearchArgs searchArgs = new()
+        {
+            Link = searchResult.NextPageLink,
+        };
+
         CoroutineUtils.Run(async () =>
         {
-            ComicSearchResult? searchResult = _lastSearchResult;
-            if (searchResult is null || string.IsNullOrEmpty(searchResult.NextPageLink))
-            {
-                return;
-            }
-
-            await SearchComicsByLink(searchResult.NextPageLink);
+            await SearchComicsInternal(searchArgs);
         });
     }
 
@@ -261,54 +262,116 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
             links[PluginConstants.LINK_NAME_EHENTAI] = link.Replace(PluginConstants.URL_PREFIX_EXHENTAI, PluginConstants.URL_PREFIX_EHENTAI);
             links[PluginConstants.LINK_NAME_EXHENTAI] = link.Replace(PluginConstants.URL_PREFIX_EHENTAI, PluginConstants.URL_PREFIX_EXHENTAI);
             await comic.SetLinks(links);
+
+            if (comic != _comic)
+            {
+                // Out-of-date
+                return;
+            }
+
+            _link = GetComicLink(comic);
             UpdateLinkStatus();
+
+            if (string.IsNullOrEmpty(_link))
+            {
+                return;
+            }
+
             ClearComicInfo();
-            await RequestComicInfo();
+            await RequestComicInfo(comic, _link);
         });
     }
 
     public void RetryRequestComicInfo()
     {
-        CoroutineUtils.Run(RequestComicInfo);
+        if (_comic is null || string.IsNullOrEmpty(_link))
+        {
+            return;
+        }
+
+        CoroutineUtils.Run(async () =>
+        {
+            ClearComicInfo();
+            await RequestComicInfo(_comic, _link);
+        });
     }
 
-    private async Task SearchComicsByLink(string link)
+    private async Task SearchComicsInternal(SearchArgs args)
     {
-        ComicSearchResult? result = null;
+        if (_searchingArgs == args)
+        {
+            return;
+        }
+
+        _searchingArgs = args;
+        ComicSearchResult result;
         try
         {
-            result = await PluginService.Ability.SearchComicsByLink(link);
+            if (args.Link is not null)
+            {
+                result = await PluginService.Ability.SearchComicsByLink(args.Link);
+            }
+            else if (args.Keyword is not null)
+            {
+                result = await PluginService.Ability.SearchComicsByKeyword(args.Keyword, args.DisableFilters);
+            }
+            else
+            {
+                throw new ArgumentException("Invalid search arguments.");
+            }
         }
         catch (Exception ex)
         {
+            if (args != _searchingArgs)
+            {
+                // Out-of-date
+                return;
+            }
+
+            _searchingArgs = null;
+            _lastSearchResult = null;
+            UpdateSearchResult();
             ErrorDialogMessage = ex.Message;
+            return;
         }
 
+        if (args != _searchingArgs)
+        {
+            // Out-of-date
+            return;
+        }
+
+        _searchingArgs = null;
         _lastSearchResult = result;
         UpdateSearchResult();
     }
 
-    private async Task RequestComicInfo()
+    private async Task LoadComicInternal(IComicModel? comic)
     {
-        IComicModel? comic = _comic;
+        ClearComic();
+        _comic = comic;
+
         if (comic is null)
         {
+            LinkStatusText = "Open a comic for linking.";
             return;
         }
 
-        if (_comicInfo is not null)
+        _link = GetComicLink(comic);
+        UpdateLinkStatus();
+        ComicSearchBoxText = ExtractSearchKeyword(comic);
+
+        if (string.IsNullOrEmpty(_link))
         {
+            SelectedTabIndex = 0;
             return;
         }
 
-        string? link = GetComicLink(comic);
-        if (string.IsNullOrEmpty(link))
-        {
-            return;
-        }
+        await RequestComicInfo(comic, _link);
+    }
 
-        ClearComicInfo();
-
+    private async Task RequestComicInfo(IComicModel comic, string link)
+    {
         ComicDetailedInfo comicInfo;
         try
         {
@@ -316,48 +379,39 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
+            if (comic != _comic || _comicInfo is not null)
+            {
+                // Out-of-date
+                return;
+            }
+
             RequestInfoErrorMessage = ex.Message;
             InfoTabRetryVisible = true;
             return;
         }
 
-        _comicInfo = comicInfo;
-
-        InfoTabContentVisible = true;
-        ComicTitle1 = comicInfo.Title1;
-        ComicTitle2 = comicInfo.Title2;
-
-        ComicCommentItems.Clear();
-        foreach (CommentInfo comment in comicInfo.Comments)
+        if (comic != _comic || _comicInfo is not null)
         {
-            string voteText = comment.IsFromUploader ? "Uploader" : comment.Vote.ToString();
-            string postTimeText = comment.PostTime.ToString();
-            ComicCommentItems.Add(new()
-            {
-                Sender = comment.Sender,
-                Content = comment.Content,
-                Detail = $"{voteText} | {postTimeText}",
-            });
+            // Out-of-date
+            return;
         }
+
+        _comicInfo = comicInfo;
+        SelectedTabIndex = 1;
+        UpdateComicInfo(comicInfo);
     }
 
     private void UpdateLinkStatus()
     {
-        IComicModel? comic = _comic;
-        if (comic is null)
-        {
-            LinkStatusText = "Open a comic for linking.";
-            return;
-        }
-
-        string? link = GetComicLink(comic);
+        string? link = _link;
         if (string.IsNullOrEmpty(link))
         {
             LinkStatusText = $"This comic is not linked.";
-            return;
         }
-
-        LinkStatusText = $"This comic is linked with '{link}'.";
+        else
+        {
+            LinkStatusText = $"This comic is linked with '{link}'.";
+        }
     }
 
     private void UpdateSearchResult()
@@ -388,9 +442,31 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         }
     }
 
+    private void UpdateComicInfo(ComicDetailedInfo comicInfo)
+    {
+        InfoTabRetryVisible = false;
+        InfoTabContentVisible = true;
+        ComicTitle1 = comicInfo.Title1;
+        ComicTitle2 = comicInfo.Title2;
+
+        ComicCommentItems.Clear();
+        foreach (CommentInfo comment in comicInfo.Comments)
+        {
+            string voteText = comment.IsFromUploader ? "Uploader" : comment.Vote.ToString();
+            string postTimeText = comment.PostTime.ToString();
+            ComicCommentItems.Add(new()
+            {
+                Sender = comment.Sender,
+                Content = comment.Content,
+                Detail = $"{voteText} | {postTimeText}",
+            });
+        }
+    }
+
     private void ClearComic()
     {
         _comic = null;
+        _link = null;
         ComicSearchBoxText = string.Empty;
         ComicSearchResultItems.Clear();
         ClearComicInfo();
@@ -444,4 +520,11 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
 
     [GeneratedRegex(@"^\d{8}\s*-\s*(.+)$")]
     private static partial Regex COMIC_TITLE_REGEX();
+
+    private record SearchArgs
+    {
+        public string? Keyword { get; init; } = null;
+        public bool DisableFilters { get; init; } = false;
+        public string? Link { get; init; } = null;
+    }
 }
