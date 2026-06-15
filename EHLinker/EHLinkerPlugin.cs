@@ -22,7 +22,9 @@ public partial class EHLinkerPlugin : IPlugin
 
     void IPlugin.Initialize(IPluginContext context)
     {
-        PluginService.Initialize(context, new PluginAbility());
+        PluginAbility ability = new();
+        PluginService.Initialize(context, ability);
+        ability.SetCookies(CookieManager.GetCookies());
         context.RegisterPage(HOST_SIDEBAR_PAGE, typeof(SidebarPage));
         context.RegisterSidebarPage(new SidebarPageProvider());
     }

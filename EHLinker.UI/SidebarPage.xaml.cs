@@ -1,6 +1,11 @@
 // Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
+using System.Diagnostics;
+using System.IO;
+
+using ComicReaderUWP.SDK.Models;
 using ComicReaderUWP.SDK.Plugins.Comic;
 using ComicReaderUWP.SDK.Plugins.UI;
 
@@ -89,6 +94,14 @@ public sealed partial class SidebarPage : Page
                 }
 
                 break;
+            case nameof(SidebarPageViewModel.ErrorMessageText):
+                {
+                    DialogOptions.Builder options = new();
+                    options.SetTitle("EHLinker error").SetContent(ViewModel.ErrorMessageText).SetPrimaryButtonText("OK");
+                    NavigationBundle.WindowContext.EnqueueDialog(options.Build());
+                }
+
+                break;
             default:
                 break;
         }
@@ -125,6 +138,35 @@ public sealed partial class SidebarPage : Page
         PluginService.Context.RegistryDatabase.CreateKey(PluginConstants.REGISTRY_SIDEBAR).Set(KEY_DISABLE_FILTERS, isChecked);
     }
 
+    private void EditCookiesButton_Click(object sender, RoutedEventArgs e)
+    {
+        string cookieString = CookieManager.GetCookiesAsString();
+
+        string tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        try
+        {
+            File.WriteAllText(tempFile, cookieString);
+            using Process notepad = Process.Start(new ProcessStartInfo
+            {
+                FileName = "notepad.exe",
+                Arguments = $"\"{tempFile}\"",
+                UseShellExecute = true
+            }) ?? throw new InvalidOperationException("Failed to start Notepad.");
+            notepad.WaitForExit();
+            cookieString = File.ReadAllText(tempFile);
+        }
+        finally
+        {
+            if (File.Exists(tempFile))
+            {
+                File.Delete(tempFile);
+            }
+        }
+
+        CookieManager.SaveCookies(cookieString);
+        PluginService.Ability.SetCookies(CookieManager.GetCookies());
+    }
+
     private void SearchComicPreviousPageButton_Click(object sender, RoutedEventArgs e)
     {
         ViewModel.SearchComicsPreviousPage();
@@ -148,5 +190,50 @@ public sealed partial class SidebarPage : Page
         }
 
         ViewModel.LinkComic(model.Source.Link);
+    }
+
+    private void ListView_ContextRequested(UIElement sender, Microsoft.UI.Xaml.Input.ContextRequestedEventArgs args)
+    {
+        if (args.OriginalSource is not FrameworkElement fe)
+        {
+            return;
+        }
+
+        if (fe.DataContext is not ComicSearchResultItemViewModel model)
+        {
+            return;
+        }
+
+        args.Handled = true;
+
+        var flyout = new MenuFlyout();
+
+        {
+            var item = new MenuFlyoutItem
+            {
+                Text = "Open in browser",
+                Icon = new FontIcon
+                {
+                    Glyph = "\uE909",
+                },
+            };
+            item.Click += (_, _) =>
+            {
+                CoroutineUtils.Run(async () =>
+                {
+                    await Windows.System.Launcher.LaunchUriAsync(new Uri(model.Source.Link));
+                });
+            };
+            flyout.Items.Add(item);
+        }
+
+        if (args.TryGetPosition(fe, out Windows.Foundation.Point point))
+        {
+            flyout.ShowAt(fe, new FlyoutShowOptions { Position = point });
+        }
+        else
+        {
+            flyout.ShowAt(fe);
+        }
     }
 }

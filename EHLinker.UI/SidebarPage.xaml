@@ -59,6 +59,11 @@
                         Click="DisableSearchFilterCheckBox_Click"
                         Content="Disable filters"
                         IsChecked="{x:Bind ViewModel.DisableSearchFilterChecked, Mode=TwoWay}" />
+                    <Button
+                        Margin="0,6,0,0"
+                        HorizontalAlignment="Stretch"
+                        Click="EditCookiesButton_Click"
+                        Content="Edit cookies..." />
                     <Grid Margin="0,6,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -82,6 +87,7 @@
                 <ListView
                     Grid.Row="1"
                     Margin="4,6,4,0"
+                    ContextRequested="ListView_ContextRequested"
                     ItemsSource="{x:Bind ViewModel.ComicSearchResultItems}"
                     SelectionChanged="SearchComicResultListView_SelectionChanged">
                     <ListView.ItemTemplate>

@@ -20,6 +20,18 @@ internal partial class PluginAbility : IPluginAbility
     private readonly object _clientLock = new();
     private ClassicHttpClient? _client;
 
+    public IReadOnlyDictionary<string, string> GetCookies()
+    {
+        ClassicHttpClient client = GetClient();
+        return client.GetCookies(new("https://e-hentai.org"));
+    }
+
+    public void SetCookies(IReadOnlyDictionary<string, string> cookies)
+    {
+        ClassicHttpClient client = GetClient();
+        client.SetCookies(new("https://e-hentai.org"), cookies);
+    }
+
     public async Task<ComicSearchResult> SearchComicsByKeyword(string keyword, bool disableFilters)
     {
         StringBuilder urlBuilder = new($"https://e-hentai.org/?f_search={Uri.EscapeDataString(keyword)}");
@@ -29,26 +41,26 @@ internal partial class PluginAbility : IPluginAbility
         }
 
         string url = urlBuilder.ToString();
-        ClassicHttpClient client = await GetClient();
+        ClassicHttpClient client = GetClient();
         string html = await client.GetHtmlAsync(url);
         return ParseComicSearchResult(html);
     }
 
     public async Task<ComicSearchResult> SearchComicsByLink(string link)
     {
-        ClassicHttpClient client = await GetClient();
+        ClassicHttpClient client = GetClient();
         string html = await client.GetHtmlAsync(link);
         return ParseComicSearchResult(html);
     }
 
     public async Task<ComicDetailedInfo> RequestComicInfo(string link)
     {
-        ClassicHttpClient client = await GetClient();
+        ClassicHttpClient client = GetClient();
         string html = await client.GetHtmlAsync(link);
         return ParseComicInfo(html);
     }
 
-    private async Task<ClassicHttpClient> GetClient()
+    private ClassicHttpClient GetClient()
     {
         ClassicHttpClient? client = _client;
         if (client is not null)
@@ -77,39 +89,11 @@ internal partial class PluginAbility : IPluginAbility
         doc.LoadHtml(html);
 
         HtmlNode node1 = doc.DocumentNode.SelectSingleNode("/html/body/div[@class='ido']/div[@style='position:relative; z-index:2']");
-        HtmlNode tableNode = node1.SelectSingleNode("./table[@class='itg gltc']");
         HtmlNode searchnavNode = node1.SelectSingleNode("./div[@class='searchnav']");
         HtmlNode previousPageNode = searchnavNode.SelectSingleNode(".//*[@id='uprev']");
         HtmlNode nextPageNode = searchnavNode.SelectSingleNode(".//*[@id='unext']");
 
-        List<HtmlNode> itemNodes = [.. tableNode.ChildNodes.Where(n => n.Name == "tr").Skip(1)];
-        List<ComicBasicInfo> comics = [];
-        foreach (HtmlNode itemNode in itemNodes)
-        {
-            HtmlNode? gl3cNode = itemNode.SelectSingleNode("./td[@class='gl3c glname']/a");
-            if (gl3cNode is null)
-            {
-                continue;
-            }
-
-            string link = gl3cNode.Attributes["href"].Value;
-            string title = gl3cNode.SelectSingleNode("./div[@class='glink']").InnerText;
-
-            string categoryText = itemNode.SelectSingleNode("./td[@class='gl1c glcat']/div").InnerText;
-
-            string pageCountText = itemNode.SelectSingleNode("./td[@class='gl2c']/div[@class='glthumb']/div[2]/div[2]/div[2]").InnerText;
-            int pageCount = int.Parse(pageCountText[..^6]);
-
-            ComicBasicInfo comic = new()
-            {
-                Title = title,
-                Link = link,
-                Category = ToComicCategory(categoryText),
-                PageCount = pageCount,
-            };
-            comics.Add(comic);
-        }
-
+        List<ComicBasicInfo> comics = ParseComicList(doc.DocumentNode);
         string? previousPageLink = previousPageNode.Name == "a" ? previousPageNode.Attributes["href"].DeEntitizeValue : null;
         string? nextPageLink = nextPageNode.Name == "a" ? nextPageNode.Attributes["href"].DeEntitizeValue : null;
 
@@ -119,6 +103,71 @@ internal partial class PluginAbility : IPluginAbility
             PreviousPageLink = previousPageLink,
             NextPageLink = nextPageLink,
         };
+    }
+
+    private static List<ComicBasicInfo> ParseComicList(HtmlNode rootNode)
+    {
+        List<ComicBasicInfo> comics = [];
+        HtmlNode node1 = rootNode.SelectSingleNode("/html/body/div[@class='ido']/div[@style='position:relative; z-index:2']");
+
+        HtmlNode? comicsNode = node1.SelectSingleNode("./table[@class='itg gltc']");
+        if (comicsNode is not null)
+        {
+            List<HtmlNode> itemNodes = [.. comicsNode.ChildNodes.Where(n => n.Name == "tr").Skip(1)];
+            foreach (HtmlNode itemNode in itemNodes)
+            {
+                HtmlNode? gl3cNode = itemNode.SelectSingleNode("./td[@class='gl3c glname']/a");
+                if (gl3cNode is null)
+                {
+                    continue;
+                }
+
+                string link = gl3cNode.Attributes["href"].DeEntitizeValue;
+                string title = gl3cNode.SelectSingleNode("./div[@class='glink']").InnerText;
+                string categoryText = itemNode.SelectSingleNode("./td[@class='gl1c glcat']/div").InnerText;
+                string pageCountText = itemNode.SelectSingleNode("./td[@class='gl2c']/div[@class='glthumb']/div[2]/div[2]/div[2]").InnerText;
+
+                ComicBasicInfo comic = new()
+                {
+                    Title = title,
+                    Link = link,
+                    Category = ToComicCategory(categoryText),
+                    PageCount = int.Parse(pageCountText[..^6]),
+                };
+                comics.Add(comic);
+            }
+
+            return comics;
+        }
+
+        comicsNode = node1.SelectSingleNode("./div[@class='itg gld']");
+        if (comicsNode is not null)
+        {
+            List<HtmlNode> itemNodes = [.. comicsNode.ChildNodes.Where(n =>
+                n.Name == "div" &&
+                n.Attributes.Contains("class") &&
+                n.Attributes["class"].Value == "gl1t")];
+            foreach (HtmlNode itemNode in itemNodes)
+            {
+                string link = itemNode.SelectSingleNode("./a[1]").Attributes["href"].DeEntitizeValue;
+                string title = itemNode.SelectSingleNode(".//div[@class='gl4t glname glink']").InnerText;
+                string categoryText = itemNode.SelectSingleNode("./div[@class='gl5t']/div[1]/div[1]").InnerText;
+                string pageCountText = itemNode.SelectSingleNode("./div[@class='gl5t']/div[2]/div[2]").InnerText;
+
+                ComicBasicInfo comic = new()
+                {
+                    Title = title,
+                    Link = link,
+                    Category = ToComicCategory(categoryText),
+                    PageCount = int.Parse(pageCountText[..^6]),
+                };
+                comics.Add(comic);
+            }
+
+            return comics;
+        }
+
+        throw new ArgumentException("Invalid HTML.");
     }
 
     private static ComicDetailedInfo ParseComicInfo(string html)

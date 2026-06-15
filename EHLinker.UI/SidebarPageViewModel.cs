@@ -31,6 +31,17 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         }
     }
 
+    private string _errorMessageText = string.Empty;
+    public string ErrorMessageText
+    {
+        get => _errorMessageText;
+        set
+        {
+            _errorMessageText = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ErrorMessageText)));
+        }
+    }
+
     private string _linkStatusText = string.Empty;
     public string LinkStatusText
     {
@@ -133,37 +144,41 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
             return;
         }
 
-        CoroutineUtils.Run(async () =>
-        {
-            ClearComic();
-            _comic = comic;
-            UpdateLinkStatus();
-            await RequestComicInfo();
+        ClearComic();
+        _comic = comic;
+        UpdateLinkStatus();
 
-            if (_comicInfo is null)
+        if (comic is not null)
+        {
+            CoroutineUtils.Run(async () =>
             {
-                SelectedTabIndex = 0;
-            }
-            else
-            {
-                SelectedTabIndex = 1;
-            }
-        });
+                ComicSearchBoxText = ExtractSearchKeyword(comic);
+                await RequestComicInfo();
+
+                if (_comicInfo is null)
+                {
+                    SelectedTabIndex = 0;
+                }
+                else
+                {
+                    SelectedTabIndex = 1;
+                }
+            });
+        }
     }
 
     public void SearchComics(string keyword, bool disableFilters)
     {
         CoroutineUtils.Run(async () =>
         {
-            ComicSearchResult result;
+            ComicSearchResult? result = null;
             try
             {
                 result = await PluginService.Ability.SearchComicsByKeyword(keyword, disableFilters);
             }
             catch (Exception ex)
             {
-                LinkStatusText = ex.Message;
-                return;
+                ErrorMessageText = ex.Message;
             }
 
             _lastSearchResult = result;
@@ -214,21 +229,21 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
             links[PluginConstants.LINK_NAME_EXHENTAI] = link.Replace(PluginConstants.URL_PREFIX_EHENTAI, PluginConstants.URL_PREFIX_EXHENTAI);
             await comic.SetLinks(links);
             UpdateLinkStatus();
+            ClearComicInfo();
             await RequestComicInfo();
         });
     }
 
     private async Task SearchComicsByLink(string link)
     {
-        ComicSearchResult result;
+        ComicSearchResult? result = null;
         try
         {
             result = await PluginService.Ability.SearchComicsByLink(link);
         }
         catch (Exception ex)
         {
-            LinkStatusText = ex.Message;
-            return;
+            ErrorMessageText = ex.Message;
         }
 
         _lastSearchResult = result;
@@ -261,7 +276,7 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            ComicTitle1 = ex.Message;
+            ErrorMessageText = ex.Message;
             return;
         }
 
@@ -274,10 +289,9 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         IComicModel? comic = _comic;
         if (comic is null)
         {
+            LinkStatusText = "Open a comic for linking.";
             return;
         }
-
-        ComicSearchBoxText = ExtractSearchKeyword(comic);
 
         string? link = GetComicLink(comic);
         if (string.IsNullOrEmpty(link))
@@ -297,21 +311,23 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         {
             SearchComicPreviousPageEnabled = false;
             SearchComicNextPageEnabled = false;
-            return;
+            ComicSearchResultItems.Clear();
         }
-
-        SearchComicPreviousPageEnabled = !string.IsNullOrEmpty(searchResult.PreviousPageLink);
-        SearchComicNextPageEnabled = !string.IsNullOrEmpty(searchResult.NextPageLink);
-
-        ComicSearchResultItems.Clear();
-        foreach (ComicBasicInfo item in searchResult.Items)
+        else
         {
-            ComicSearchResultItems.Add(new()
+            SearchComicPreviousPageEnabled = !string.IsNullOrEmpty(searchResult.PreviousPageLink);
+            SearchComicNextPageEnabled = !string.IsNullOrEmpty(searchResult.NextPageLink);
+
+            ComicSearchResultItems.Clear();
+            foreach (ComicBasicInfo item in searchResult.Items)
             {
-                Title = item.Title,
-                Description = $"{item.Category} | {item.PageCount} | {item.Link}",
-                Source = item,
-            });
+                ComicSearchResultItems.Add(new()
+                {
+                    Title = item.Title,
+                    Description = $"{item.Category} | {item.PageCount} | {item.Link}",
+                    Source = item,
+                });
+            }
         }
     }
 
@@ -343,10 +359,14 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
     private void ClearComic()
     {
         _comic = null;
-        _comicInfo = null;
-        LinkStatusText = "Open a comic for linking.";
         ComicSearchBoxText = string.Empty;
         ComicSearchResultItems.Clear();
+        ClearComicInfo();
+    }
+
+    private void ClearComicInfo()
+    {
+        _comicInfo = null;
         ComicTitle1 = string.Empty;
         ComicTitle2 = string.Empty;
         ComicCommentItems.Clear();
