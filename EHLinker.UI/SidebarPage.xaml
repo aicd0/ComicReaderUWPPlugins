@@ -42,7 +42,13 @@
                     Grid.Row="0"
                     Margin="8,0"
                     Orientation="Vertical">
-                    <Grid Margin="0,6,0,0">
+                    <TextBlock
+                        Margin="7,10,7,0"
+                        FontWeight="SemiLight"
+                        IsTextSelectionEnabled="True"
+                        Text="{x:Bind ViewModel.LinkStatusText, Mode=OneWay}"
+                        TextWrapping="Wrap" />
+                    <Grid Margin="0,10,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -121,7 +127,28 @@
             </Grid>
 
             <Grid x:Name="InfoTabGrid">
-                <ScrollViewer Padding="15,0,15,0" VerticalScrollBarVisibility="Auto">
+                <Grid Visibility="{x:Bind ViewModel.InfoTabRetryVisible, Mode=OneWay}">
+                    <StackPanel
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Orientation="Vertical">
+                        <TextBlock
+                            Margin="15,0"
+                            HorizontalAlignment="Center"
+                            FontWeight="SemiLight"
+                            Text="{x:Bind ViewModel.RequestInfoErrorMessage, Mode=OneWay}"
+                            TextWrapping="Wrap" />
+                        <Button
+                            Margin="0,10,0,0"
+                            HorizontalAlignment="Center"
+                            Click="RequestInfoRetryButton_Click"
+                            Content="Retry" />
+                    </StackPanel>
+                </Grid>
+                <ScrollViewer
+                    Padding="15,0,15,0"
+                    VerticalScrollBarVisibility="Auto"
+                    Visibility="{x:Bind ViewModel.InfoTabContentVisible, Mode=OneWay}">
                     <StackPanel Orientation="Vertical">
                         <TextBlock
                             Margin="0,10,0,0"
@@ -139,12 +166,6 @@
                             Text="{x:Bind ViewModel.ComicTitle2, Mode=OneWay}"
                             TextWrapping="Wrap"
                             Visibility="{x:Bind ViewModel.ComicTitle2Visible, Mode=OneWay}" />
-                        <TextBlock
-                            Margin="0,10,0,0"
-                            FontWeight="SemiLight"
-                            IsTextSelectionEnabled="True"
-                            Text="{x:Bind ViewModel.LinkStatusText, Mode=OneWay}"
-                            TextWrapping="Wrap" />
                         <Rectangle
                             Height="1"
                             Margin="0,18,0,9"

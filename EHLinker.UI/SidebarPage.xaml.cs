@@ -94,10 +94,10 @@ public sealed partial class SidebarPage : Page
                 }
 
                 break;
-            case nameof(SidebarPageViewModel.ErrorMessageText):
+            case nameof(SidebarPageViewModel.ErrorDialogMessage):
                 {
                     DialogOptions.Builder options = new();
-                    options.SetTitle("EHLinker error").SetContent(ViewModel.ErrorMessageText).SetPrimaryButtonText("OK");
+                    options.SetTitle("EHLinker error").SetContent(ViewModel.ErrorDialogMessage).SetPrimaryButtonText("OK");
                     NavigationBundle.WindowContext.EnqueueDialog(options.Build());
                 }
 
@@ -235,5 +235,10 @@ public sealed partial class SidebarPage : Page
         {
             flyout.ShowAt(fe);
         }
+    }
+
+    private void RequestInfoRetryButton_Click(object sender, RoutedEventArgs e)
+    {
+        ViewModel.RetryRequestComicInfo();
     }
 }

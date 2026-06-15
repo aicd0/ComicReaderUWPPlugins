@@ -31,14 +31,14 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         }
     }
 
-    private string _errorMessageText = string.Empty;
-    public string ErrorMessageText
+    private string _errorDialogMessage = string.Empty;
+    public string ErrorDialogMessage
     {
-        get => _errorMessageText;
+        get => _errorDialogMessage;
         set
         {
-            _errorMessageText = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ErrorMessageText)));
+            _errorDialogMessage = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ErrorDialogMessage)));
         }
     }
 
@@ -94,6 +94,39 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         {
             _searchComicNextPageEnabled = value;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SearchComicNextPageEnabled)));
+        }
+    }
+
+    private bool _infoTabContentVisible = false;
+    public bool InfoTabContentVisible
+    {
+        get => _infoTabContentVisible;
+        set
+        {
+            _infoTabContentVisible = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InfoTabContentVisible)));
+        }
+    }
+
+    private bool _infoTabRetryVisible = false;
+    public bool InfoTabRetryVisible
+    {
+        get => _infoTabRetryVisible;
+        set
+        {
+            _infoTabRetryVisible = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InfoTabRetryVisible)));
+        }
+    }
+
+    private string _requestInfoErrorMessage = string.Empty;
+    public string RequestInfoErrorMessage
+    {
+        get => _requestInfoErrorMessage;
+        set
+        {
+            _requestInfoErrorMessage = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RequestInfoErrorMessage)));
         }
     }
 
@@ -178,7 +211,7 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
             }
             catch (Exception ex)
             {
-                ErrorMessageText = ex.Message;
+                ErrorDialogMessage = ex.Message;
             }
 
             _lastSearchResult = result;
@@ -234,6 +267,11 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         });
     }
 
+    public void RetryRequestComicInfo()
+    {
+        CoroutineUtils.Run(RequestComicInfo);
+    }
+
     private async Task SearchComicsByLink(string link)
     {
         ComicSearchResult? result = null;
@@ -243,7 +281,7 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            ErrorMessageText = ex.Message;
+            ErrorDialogMessage = ex.Message;
         }
 
         _lastSearchResult = result;
@@ -269,6 +307,8 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
             return;
         }
 
+        ClearComicInfo();
+
         ComicDetailedInfo comicInfo;
         try
         {
@@ -276,12 +316,29 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         }
         catch (Exception ex)
         {
-            ErrorMessageText = ex.Message;
+            RequestInfoErrorMessage = ex.Message;
+            InfoTabRetryVisible = true;
             return;
         }
 
         _comicInfo = comicInfo;
-        UpdateComicInfo();
+
+        InfoTabContentVisible = true;
+        ComicTitle1 = comicInfo.Title1;
+        ComicTitle2 = comicInfo.Title2;
+
+        ComicCommentItems.Clear();
+        foreach (CommentInfo comment in comicInfo.Comments)
+        {
+            string voteText = comment.IsFromUploader ? "Uploader" : comment.Vote.ToString();
+            string postTimeText = comment.PostTime.ToString();
+            ComicCommentItems.Add(new()
+            {
+                Sender = comment.Sender,
+                Content = comment.Content,
+                Detail = $"{voteText} | {postTimeText}",
+            });
+        }
     }
 
     private void UpdateLinkStatus()
@@ -331,31 +388,6 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         }
     }
 
-    private void UpdateComicInfo()
-    {
-        ComicDetailedInfo? comicInfo = _comicInfo;
-        if (comicInfo is null)
-        {
-            return;
-        }
-
-        ComicTitle1 = comicInfo.Title1;
-        ComicTitle2 = comicInfo.Title2;
-
-        ComicCommentItems.Clear();
-        foreach (CommentInfo comment in comicInfo.Comments)
-        {
-            string voteText = comment.IsFromUploader ? "Uploader" : comment.Vote.ToString();
-            string postTimeText = comment.PostTime.ToString();
-            ComicCommentItems.Add(new()
-            {
-                Sender = comment.Sender,
-                Content = comment.Content,
-                Detail = $"{voteText} | {postTimeText}",
-            });
-        }
-    }
-
     private void ClearComic()
     {
         _comic = null;
@@ -367,9 +399,12 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
     private void ClearComicInfo()
     {
         _comicInfo = null;
+        InfoTabContentVisible = false;
+        InfoTabRetryVisible = false;
         ComicTitle1 = string.Empty;
         ComicTitle2 = string.Empty;
         ComicCommentItems.Clear();
+        RequestInfoErrorMessage = string.Empty;
     }
 
     private static string ExtractSearchKeyword(IComicModel comic)
