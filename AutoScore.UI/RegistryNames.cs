@@ -5,9 +5,9 @@ namespace AutoScore.UI;
 
 internal static class RegistryNames
 {
-    public const string SETTINGS = "/Settings/";
-    public const string DETAIL_1 = "/Detail1/";
-    public const string SCORE_DRAFT = "/ScoreDraft/";
+    public const string SETTINGS = "/Settings";
+    public const string DETAIL_1 = "/Detail1";
+    public const string SCORE_DRAFT = "/ScoreDraft";
 
     public static class SettingsKey
     {

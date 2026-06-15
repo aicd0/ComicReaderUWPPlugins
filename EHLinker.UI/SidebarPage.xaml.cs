@@ -4,6 +4,8 @@
 using ComicReaderUWP.SDK.Plugins.Comic;
 using ComicReaderUWP.SDK.Plugins.UI;
 
+using EHLinker.UI.Utils;
+
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -13,6 +15,8 @@ namespace EHLinker.UI;
 
 public sealed partial class SidebarPage : Page
 {
+    private const string KEY_DISABLE_FILTERS = "DisableFilters";
+
     internal SidebarPageViewModel ViewModel { get; } = new();
 
     private IPageNavigationBundle? _navigationBundle;
@@ -56,6 +60,7 @@ public sealed partial class SidebarPage : Page
     {
         NavigationBundle.WindowContext.ReadingComicChanged += WindowContext_ReadingComicChanged;
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        ViewModel.DisableSearchFilterChecked = PluginService.Context.RegistryDatabase.CreateKey(PluginConstants.REGISTRY_SIDEBAR).GetValueOrDefault(KEY_DISABLE_FILTERS, true);
         ViewModel.Initialize();
         ViewModel.LoadComic(NavigationBundle.WindowContext.ReadingComic);
     }
@@ -111,7 +116,13 @@ public sealed partial class SidebarPage : Page
 
     private void SearchComicButton_Click(object sender, RoutedEventArgs e)
     {
-        ViewModel.SearchComics(ViewModel.ComicSearchBoxText);
+        ViewModel.SearchComics(ViewModel.ComicSearchBoxText, ViewModel.DisableSearchFilterChecked);
+    }
+
+    private void DisableSearchFilterCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        bool isChecked = ((CheckBox)sender).IsChecked == true;
+        PluginService.Context.RegistryDatabase.CreateKey(PluginConstants.REGISTRY_SIDEBAR).Set(KEY_DISABLE_FILTERS, isChecked);
     }
 
     private void SearchComicPreviousPageButton_Click(object sender, RoutedEventArgs e)

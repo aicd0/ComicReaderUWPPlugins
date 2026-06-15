@@ -53,6 +53,17 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         }
     }
 
+    private bool _disableSearchFilterChecked = false;
+    public bool DisableSearchFilterChecked
+    {
+        get => _disableSearchFilterChecked;
+        set
+        {
+            _disableSearchFilterChecked = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DisableSearchFilterChecked)));
+        }
+    }
+
     private bool _searchComicPreviousPageEnabled = false;
     public bool SearchComicPreviousPageEnabled
     {
@@ -140,14 +151,14 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         });
     }
 
-    public void SearchComics(string keyword)
+    public void SearchComics(string keyword, bool disableFilters)
     {
         CoroutineUtils.Run(async () =>
         {
             ComicSearchResult result;
             try
             {
-                result = await PluginService.Ability.SearchComicsByKeyword(keyword);
+                result = await PluginService.Ability.SearchComicsByKeyword(keyword, disableFilters);
             }
             catch (Exception ex)
             {

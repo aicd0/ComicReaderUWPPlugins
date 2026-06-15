@@ -5,5 +5,5 @@ namespace DuplicationDetection;
 
 internal class RegistryNames
 {
-    public const string IMAGE_INFO = "/ImageInfo/";
+    public const string IMAGE_INFO = "/ImageInfo";
 }

@@ -9,7 +9,7 @@ namespace EHLinker.UI;
 
 public interface IPluginAbility
 {
-    Task<ComicSearchResult> SearchComicsByKeyword(string keyword);
+    Task<ComicSearchResult> SearchComicsByKeyword(string keyword, bool disableFilters);
 
     Task<ComicSearchResult> SearchComicsByLink(string link);
 

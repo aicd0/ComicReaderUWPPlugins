@@ -54,6 +54,11 @@
                             Click="SearchComicButton_Click"
                             Content="Search" />
                     </Grid>
+                    <CheckBox
+                        Margin="0,6,0,0"
+                        Click="DisableSearchFilterCheckBox_Click"
+                        Content="Disable filters"
+                        IsChecked="{x:Bind ViewModel.DisableSearchFilterChecked, Mode=TwoWay}" />
                     <Grid Margin="0,6,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />

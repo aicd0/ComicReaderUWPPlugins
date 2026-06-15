@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -19,9 +20,15 @@ internal partial class PluginAbility : IPluginAbility
     private readonly object _clientLock = new();
     private ClassicHttpClient? _client;
 
-    public async Task<ComicSearchResult> SearchComicsByKeyword(string keyword)
+    public async Task<ComicSearchResult> SearchComicsByKeyword(string keyword, bool disableFilters)
     {
-        string url = $"https://e-hentai.org/?f_search={Uri.EscapeDataString(keyword)}";
+        StringBuilder urlBuilder = new($"https://e-hentai.org/?f_search={Uri.EscapeDataString(keyword)}");
+        if (disableFilters)
+        {
+            urlBuilder.Append("&f_sft=on&f_sfu=on&f_sfl=on&f_cats=0");
+        }
+
+        string url = urlBuilder.ToString();
         ClassicHttpClient client = await GetClient();
         string html = await client.GetHtmlAsync(url);
         return ParseComicSearchResult(html);
