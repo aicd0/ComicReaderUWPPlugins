@@ -14,9 +14,12 @@ namespace EHLinker;
 
 internal sealed partial class ClassicHttpClient : IDisposable
 {
+    private const int MIN_QUERY_PROXY_INTERVAL = 5000;
+
     private readonly object _lock = new();
     private RefCounted<WrappedHttpClient>? _clientRef;
     private ProxyService.ProxyInfo? _proxyInfo;
+    private long _lastQueryProxyTime = 0;
 
     public IReadOnlyDictionary<string, string> GetCookies(Uri uri)
     {
@@ -64,10 +67,20 @@ internal sealed partial class ClassicHttpClient : IDisposable
 
     private RefCounted<WrappedHttpClient> RefClient()
     {
-        ProxyService.ProxyInfo? newProxyInfo = ProxyService.GetProxyInfo();
+        long time = Environment.TickCount64;
+
+        bool proxyMayChanged = time - _lastQueryProxyTime >= MIN_QUERY_PROXY_INTERVAL;
+        ProxyService.ProxyInfo? newProxyInfo = null;
+        if (proxyMayChanged)
+        {
+            newProxyInfo = ProxyService.GetProxyInfo();
+            _lastQueryProxyTime = time;
+        }
+
         lock (_lock)
         {
-            if (_clientRef is not null && newProxyInfo == _proxyInfo)
+            bool proxyChanged = proxyMayChanged && newProxyInfo != _proxyInfo;
+            if (_clientRef is not null && !proxyChanged)
             {
                 _clientRef.Ref();
                 return _clientRef;
