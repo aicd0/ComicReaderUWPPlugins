@@ -97,6 +97,17 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         }
     }
 
+    private bool _searchResultEmptyVisible = false;
+    public bool SearchResultEmptyVisible
+    {
+        get => _searchResultEmptyVisible;
+        set
+        {
+            _searchResultEmptyVisible = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SearchResultEmptyVisible)));
+        }
+    }
+
     private bool _infoTabContentVisible = false;
     public bool InfoTabContentVisible
     {
@@ -175,6 +186,7 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         CoroutineUtils.Run(async () =>
         {
             await LoadComicInternal(null);
+            UpdateSearchResult();
         });
     }
 
@@ -420,12 +432,14 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
 
         if (searchResult is null)
         {
+            SearchResultEmptyVisible = false;
             SearchComicPreviousPageEnabled = false;
             SearchComicNextPageEnabled = false;
             ComicSearchResultItems.Clear();
         }
         else
         {
+            SearchResultEmptyVisible = searchResult.Items.Count == 0;
             SearchComicPreviousPageEnabled = !string.IsNullOrEmpty(searchResult.PreviousPageLink);
             SearchComicNextPageEnabled = !string.IsNullOrEmpty(searchResult.NextPageLink);
 
@@ -468,7 +482,6 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         _comic = null;
         _link = null;
         ComicSearchBoxText = string.Empty;
-        ComicSearchResultItems.Clear();
         ClearComicInfo();
     }
 

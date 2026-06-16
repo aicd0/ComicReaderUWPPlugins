@@ -7,7 +7,7 @@ namespace EHLinker.UI.Models;
 
 public class ComicSearchResult
 {
-    public required IEnumerable<ComicBasicInfo> Items { get; init; }
+    public required IReadOnlyList<ComicBasicInfo> Items { get; init; }
 
     public required string? PreviousPageLink { get; init; }
 

@@ -90,6 +90,14 @@
                             IsEnabled="{x:Bind ViewModel.SearchComicNextPageEnabled, Mode=OneWay}" />
                     </Grid>
                 </StackPanel>
+                <TextBlock
+                    Grid.Row="1"
+                    Margin="0,10,0,0"
+                    HorizontalAlignment="Center"
+                    FontWeight="Bold"
+                    Text="No hits found"
+                    TextWrapping="Wrap"
+                    Visibility="{x:Bind ViewModel.SearchResultEmptyVisible, Mode=OneWay}" />
                 <ListView
                     Grid.Row="1"
                     Margin="4,6,4,0"

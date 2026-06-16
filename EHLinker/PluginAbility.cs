@@ -89,7 +89,17 @@ internal partial class PluginAbility : IPluginAbility
         doc.LoadHtml(html);
 
         HtmlNode node1 = doc.DocumentNode.SelectSingleNode("/html/body/div[@class='ido']/div[@style='position:relative; z-index:2']");
-        HtmlNode searchnavNode = node1.SelectSingleNode("./div[@class='searchnav']");
+        HtmlNode? searchnavNode = node1.SelectSingleNode("./div[@class='searchnav']");
+        if (searchnavNode is null)
+        {
+            return new()
+            {
+                Items = [],
+                PreviousPageLink = null,
+                NextPageLink = null,
+            };
+        }
+
         HtmlNode previousPageNode = searchnavNode.SelectSingleNode(".//*[@id='uprev']");
         HtmlNode nextPageNode = searchnavNode.SelectSingleNode(".//*[@id='unext']");
 
