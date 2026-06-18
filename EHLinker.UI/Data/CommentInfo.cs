@@ -3,7 +3,7 @@
 
 using System;
 
-namespace EHLinker.UI.Models;
+namespace EHLinker.UI.Data;
 
 public class CommentInfo
 {

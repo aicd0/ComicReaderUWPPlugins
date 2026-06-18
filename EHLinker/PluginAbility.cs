@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using EHLinker.UI;
-using EHLinker.UI.Models;
+using EHLinker.UI.Data;
 
 using HtmlAgilityPack;
 
@@ -185,9 +185,30 @@ internal partial class PluginAbility : IPluginAbility
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
 
-        HtmlNode titleNode = doc.DocumentNode.SelectSingleNode("/html/body/div[@class='gm']/div[@id='gd2']");
+        HtmlNode gmNode = doc.DocumentNode.SelectSingleNode("/html/body/div[@class='gm']");
+
+        HtmlNode titleNode = gmNode.SelectSingleNode("./div[@id='gd2']");
         string title1 = titleNode.SelectSingleNode("./h1[@id='gn']").InnerText;
         string title2 = titleNode.SelectSingleNode("./h1[@id='gj']").InnerText;
+
+        HtmlNode tagsNode = gmNode.SelectSingleNode("./div[@id='gmid']/div[@id='gd4']/div[@id='taglist']/table");
+        List<HtmlNode> tagNodes = [.. tagsNode.ChildNodes.Where(n => n.Name == "tr")];
+        Dictionary<string, IReadOnlySet<string>> tags = [];
+        foreach (HtmlNode tagNode in tagNodes)
+        {
+            string category = tagNode.SelectSingleNode("./td[@class='tc']").InnerText.TrimEnd(':');
+
+            HtmlNode innerTagsNode = tagNode.SelectSingleNode("./td[2]");
+            List<HtmlNode> innerTagNodes = [.. innerTagsNode.ChildNodes.Where(n => n.Name == "div")];
+            HashSet<string> innerTags = [];
+            foreach (HtmlNode innerTagNode in innerTagNodes)
+            {
+                string tag = innerTagNode.SelectSingleNode("./a").InnerText;
+                innerTags.Add(tag);
+            }
+
+            tags.Add(category, innerTags);
+        }
 
         HtmlNode commentsNode = doc.DocumentNode.SelectSingleNode("/html/body/div[@id='cdiv']");
         List<HtmlNode> commentNodes = [.. commentsNode.ChildNodes.Where(n =>
@@ -238,6 +259,7 @@ internal partial class PluginAbility : IPluginAbility
         {
             Title1 = title1,
             Title2 = title2,
+            Tags = tags,
             Comments = comments,
         };
     }

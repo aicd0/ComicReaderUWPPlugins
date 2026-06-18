@@ -5,6 +5,7 @@ using ComicReaderUWP.SDK.Plugins;
 using ComicReaderUWP.SDK.Plugins.UI;
 
 using EHLinker.UI;
+using EHLinker.UI.Views;
 
 using Microsoft.UI.Xaml.Controls;
 

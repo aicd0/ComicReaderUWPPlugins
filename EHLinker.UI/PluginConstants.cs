@@ -12,5 +12,5 @@ public static class PluginConstants
     public const string URL_PREFIX_EXHENTAI = "https://exhentai.org/g/";
 
     public const string REGISTRY_COOKIES = "/Cookies";
-    public const string REGISTRY_SIDEBAR = "/Sidebar";
+    public const string REGISTRY_SETTINGS = "/Settings";
 }

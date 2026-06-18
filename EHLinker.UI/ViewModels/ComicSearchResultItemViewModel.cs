@@ -1,9 +1,9 @@
 ﻿// Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
-using EHLinker.UI.Models;
+using EHLinker.UI.Data;
 
-namespace EHLinker.UI;
+namespace EHLinker.UI.ViewModels;
 
 internal class ComicSearchResultItemViewModel
 {

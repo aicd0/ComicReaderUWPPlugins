@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace EHLinker.UI.Models;
+namespace EHLinker.UI.Data;
 
 public class ComicSearchResult
 {

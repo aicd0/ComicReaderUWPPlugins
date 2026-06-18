@@ -2,26 +2,24 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Diagnostics;
-using System.IO;
 
 using ComicReaderUWP.SDK.Models;
 using ComicReaderUWP.SDK.Plugins.Comic;
 using ComicReaderUWP.SDK.Plugins.UI;
 
+using EHLinker.UI.Data;
 using EHLinker.UI.Utils;
+using EHLinker.UI.ViewModels;
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Navigation;
 
-namespace EHLinker.UI;
+namespace EHLinker.UI.Views;
 
 public sealed partial class SidebarPage : Page
 {
-    private const string KEY_DISABLE_FILTERS = "DisableFilters";
-
     internal SidebarPageViewModel ViewModel { get; } = new();
 
     private IPageNavigationBundle? _navigationBundle;
@@ -58,7 +56,7 @@ public sealed partial class SidebarPage : Page
 
         _contentLoaded = true;
         string resourceFolderPath = PluginService.Context.ResourceFolderPath;
-        var resourceLocator = new System.Uri($"ms-appx:///{resourceFolderPath}/EHLinker.UI/SidebarPage.xaml");
+        var resourceLocator = new System.Uri($"ms-appx:///{resourceFolderPath}/EHLinker.UI/Views/SidebarPage.xaml");
         Application.LoadComponent(this, resourceLocator, ComponentResourceLocation.Nested);
     }
 
@@ -66,7 +64,7 @@ public sealed partial class SidebarPage : Page
     {
         NavigationBundle.WindowContext.ReadingComicChanged += WindowContext_ReadingComicChanged;
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-        ViewModel.DisableSearchFilterChecked = PluginService.Context.RegistryDatabase.CreateKey(PluginConstants.REGISTRY_SIDEBAR).GetValueOrDefault(KEY_DISABLE_FILTERS, true);
+        ViewModel.DisableSearchFilterChecked = SettingsModel.DisableFilters;
         ViewModel.LoadComic(NavigationBundle.WindowContext.ReadingComic);
     }
 
@@ -135,36 +133,16 @@ public sealed partial class SidebarPage : Page
     private void DisableSearchFilterCheckBox_Click(object sender, RoutedEventArgs e)
     {
         bool isChecked = ((CheckBox)sender).IsChecked == true;
-        PluginService.Context.RegistryDatabase.CreateKey(PluginConstants.REGISTRY_SIDEBAR).Set(KEY_DISABLE_FILTERS, isChecked);
+        SettingsModel.DisableFilters = isChecked;
     }
 
-    private void EditCookiesButton_Click(object sender, RoutedEventArgs e)
+    private void SettingsButton_Click(object sender, RoutedEventArgs e)
     {
-        string cookieString = CookieManager.GetCookiesAsString();
-
-        string tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        try
+        CoroutineUtils.Run(async () =>
         {
-            File.WriteAllText(tempFile, cookieString);
-            using Process notepad = Process.Start(new ProcessStartInfo
-            {
-                FileName = "notepad.exe",
-                Arguments = $"\"{tempFile}\"",
-                UseShellExecute = true
-            }) ?? throw new InvalidOperationException("Failed to start Notepad.");
-            notepad.WaitForExit();
-            cookieString = File.ReadAllText(tempFile);
-        }
-        finally
-        {
-            if (File.Exists(tempFile))
-            {
-                File.Delete(tempFile);
-            }
-        }
-
-        CookieManager.SaveCookies(cookieString);
-        PluginService.Ability.SetCookies(CookieManager.GetCookies());
+            var dialog = new SettingsDialog();
+            await NavigationBundle.WindowContext.EnqueueDialog(dialog);
+        });
     }
 
     private void SearchComicPreviousPageButton_Click(object sender, RoutedEventArgs e)

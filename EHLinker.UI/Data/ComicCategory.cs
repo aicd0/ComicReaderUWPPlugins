@@ -1,7 +1,7 @@
 ﻿// Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
-namespace EHLinker.UI.Models;
+namespace EHLinker.UI.Data;
 
 public enum ComicCategory
 {

@@ -11,10 +11,11 @@ using System.Threading.Tasks;
 
 using ComicReaderUWP.SDK.Plugins.Comic;
 
-using EHLinker.UI.Models;
+using EHLinker.UI.Data;
 using EHLinker.UI.Utils;
+using EHLinker.UI.ViewModels;
 
-namespace EHLinker.UI;
+namespace EHLinker.UI.Views;
 
 internal partial class SidebarPageViewModel : INotifyPropertyChanged
 {
@@ -458,6 +459,36 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
 
     private void UpdateComicInfo(ComicDetailedInfo comicInfo)
     {
+        IComicModel? comic = _comic;
+        if (comic is null)
+        {
+            return;
+        }
+
+        if (SettingsModel.ImportTagsAutomatically)
+        {
+            const string tagPrefix = "EH_";
+            Dictionary<string, HashSet<string>> newTags = [];
+
+            IReadOnlyList<IComicTagCategory> oldTags = comic.Tags;
+            foreach (IComicTagCategory item in oldTags)
+            {
+                if (item.Name.StartsWith(tagPrefix))
+                {
+                    continue;
+                }
+
+                newTags[item.Name] = [.. item.Tags];
+            }
+
+            foreach (KeyValuePair<string, IReadOnlySet<string>> item in comicInfo.Tags)
+            {
+                newTags[tagPrefix + item.Key] = [.. item.Value];
+            }
+
+            comic.SetTags(newTags);
+        }
+
         InfoTabRetryVisible = false;
         InfoTabContentVisible = true;
         ComicTitle1 = comicInfo.Title1;

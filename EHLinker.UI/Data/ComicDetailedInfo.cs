@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 
-namespace EHLinker.UI.Models;
+namespace EHLinker.UI.Data;
 
 public class ComicDetailedInfo
 {
@@ -11,5 +11,7 @@ public class ComicDetailedInfo
 
     public required string Title2 { get; init; }
 
-    public required IEnumerable<CommentInfo> Comments { get; init; }
+    public required IReadOnlyDictionary<string, IReadOnlySet<string>> Tags { get; init; }
+
+    public required IReadOnlyList<CommentInfo> Comments { get; init; }
 }

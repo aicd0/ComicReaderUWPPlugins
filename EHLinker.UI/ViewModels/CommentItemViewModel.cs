@@ -1,7 +1,7 @@
 ﻿// Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
-namespace EHLinker.UI;
+namespace EHLinker.UI.ViewModels;
 
 internal class CommentItemViewModel
 {
