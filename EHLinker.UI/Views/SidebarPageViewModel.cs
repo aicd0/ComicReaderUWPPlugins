@@ -470,15 +470,15 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
             const string tagPrefix = "EH_";
             Dictionary<string, HashSet<string>> newTags = [];
 
-            IReadOnlyList<IComicTagCategory> oldTags = comic.Tags;
-            foreach (IComicTagCategory item in oldTags)
+            IReadOnlyDictionary<string, IComicTagCategory> oldTags = comic.Tags;
+            foreach (KeyValuePair<string, IComicTagCategory> item in oldTags)
             {
-                if (item.Name.StartsWith(tagPrefix))
+                if (item.Key.StartsWith(tagPrefix))
                 {
                     continue;
                 }
 
-                newTags[item.Name] = [.. item.Tags];
+                newTags[item.Key] = [.. item.Value.Tags];
             }
 
             foreach (KeyValuePair<string, IReadOnlySet<string>> item in comicInfo.Tags)

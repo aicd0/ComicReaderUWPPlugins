@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 using AutoScore.UI;
@@ -84,7 +83,12 @@ internal class AutoScoreCore
 
     private static bool IsTargetComic(IComicModel comic)
     {
-        return comic.Tags.FirstOrDefault(x => x.Name == "Type")?.Tags.Contains("Manga") ?? false;
+        if (!comic.Tags.TryGetValue("Type", out IComicTagCategory? category))
+        {
+            return false;
+        }
+
+        return category.Tags.Contains("Manga");
     }
 
     private static int CalculateRelativeScore(int absoluteScore)
