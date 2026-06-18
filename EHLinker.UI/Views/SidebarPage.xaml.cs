@@ -28,7 +28,6 @@ public sealed partial class SidebarPage : Page
     public SidebarPage()
     {
         InitializeComponentForPlugin();
-        ViewModel.Initialize();
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -64,7 +63,7 @@ public sealed partial class SidebarPage : Page
     {
         NavigationBundle.WindowContext.ReadingComicChanged += WindowContext_ReadingComicChanged;
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-        ViewModel.DisableSearchFilterChecked = SettingsModel.DisableFilters;
+        ViewModel.EnsureInitialized();
         ViewModel.LoadComic(NavigationBundle.WindowContext.ReadingComic);
     }
 

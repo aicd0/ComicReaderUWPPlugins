@@ -173,6 +173,8 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
     public ObservableCollection<ComicSearchResultItemViewModel> ComicSearchResultItems { get; } = [];
     public ObservableCollection<CommentItemViewModel> ComicCommentItems { get; } = [];
 
+    private bool _initialized = false;
+
     // Search
     private SearchArgs? _searchingArgs = null;
     private ComicSearchResult? _lastSearchResult;
@@ -182,13 +184,17 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
     private string? _link;
     private ComicDetailedInfo? _comicInfo;
 
-    public void Initialize()
+    public void EnsureInitialized()
     {
-        CoroutineUtils.Run(async () =>
+        if (_initialized)
         {
-            await LoadComicInternal(null);
-            UpdateSearchResult();
-        });
+            return;
+        }
+
+        _initialized = true;
+        SelectedTabIndex = 0;
+        DisableSearchFilterChecked = SettingsModel.DisableFilters;
+        UpdateSearchResult();
     }
 
     public void LoadComic(IComicModel? comic)
@@ -198,9 +204,28 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
             return;
         }
 
+        ClearComic();
+        _comic = comic;
+
+        if (comic is null)
+        {
+            LinkStatusText = "Open a comic for linking.";
+            return;
+        }
+
+        _link = GetComicLink(comic);
+        UpdateLinkStatus();
+        ComicSearchBoxText = ExtractSearchKeyword(comic);
+
+        if (string.IsNullOrEmpty(_link))
+        {
+            SelectedTabIndex = 0;
+            return;
+        }
+
         CoroutineUtils.Run(async () =>
         {
-            await LoadComicInternal(comic);
+            await RequestComicInfo(comic, _link);
         });
     }
 
@@ -357,30 +382,6 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         _searchingArgs = null;
         _lastSearchResult = result;
         UpdateSearchResult();
-    }
-
-    private async Task LoadComicInternal(IComicModel? comic)
-    {
-        ClearComic();
-        _comic = comic;
-
-        if (comic is null)
-        {
-            LinkStatusText = "Open a comic for linking.";
-            return;
-        }
-
-        _link = GetComicLink(comic);
-        UpdateLinkStatus();
-        ComicSearchBoxText = ExtractSearchKeyword(comic);
-
-        if (string.IsNullOrEmpty(_link))
-        {
-            SelectedTabIndex = 0;
-            return;
-        }
-
-        await RequestComicInfo(comic, _link);
     }
 
     private async Task RequestComicInfo(IComicModel comic, string link)
