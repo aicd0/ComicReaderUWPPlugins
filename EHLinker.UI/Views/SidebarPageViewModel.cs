@@ -184,24 +184,19 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
     private string? _link;
     private ComicDetailedInfo? _comicInfo;
 
-    public void EnsureInitialized()
+    public void LoadComic(IComicModel? comic)
     {
-        if (_initialized)
+        if (_initialized && comic == _comic)
         {
             return;
         }
 
-        _initialized = true;
-        SelectedTabIndex = 0;
-        DisableSearchFilterChecked = SettingsModel.DisableFilters;
-        UpdateSearchResult();
-    }
-
-    public void LoadComic(IComicModel? comic)
-    {
-        if (comic == _comic)
+        if (!_initialized)
         {
-            return;
+            _initialized = true;
+            SelectedTabIndex = 0;
+            DisableSearchFilterChecked = SettingsModel.DisableFilters;
+            UpdateSearchResult();
         }
 
         ClearComic();

@@ -63,7 +63,6 @@ public sealed partial class SidebarPage : Page
     {
         NavigationBundle.WindowContext.ReadingComicChanged += WindowContext_ReadingComicChanged;
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-        ViewModel.EnsureInitialized();
         ViewModel.LoadComic(NavigationBundle.WindowContext.ReadingComic);
     }
 
