@@ -22,9 +22,21 @@ internal partial class SettingsDialogViewModel : INotifyPropertyChanged
         }
     }
 
+    private bool _importTagsWhenNotPresent = false;
+    public bool ImportTagsWhenNotPresent
+    {
+        get => _importTagsWhenNotPresent;
+        set
+        {
+            _importTagsWhenNotPresent = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ImportTagsWhenNotPresent)));
+        }
+    }
+
     public void Initialize()
     {
         ImportTagsAutomatically = SettingsModel.ImportTagsAutomatically;
+        ImportTagsWhenNotPresent = SettingsModel.ImportTagsWhenNotPresent;
     }
 
     public void SetImportTagsAutomatically(bool enabled)
@@ -36,5 +48,16 @@ internal partial class SettingsDialogViewModel : INotifyPropertyChanged
 
         ImportTagsAutomatically = enabled;
         SettingsModel.ImportTagsAutomatically = enabled;
+    }
+
+    public void SetImportTagsWhenNotPresent(bool enabled)
+    {
+        if (enabled == ImportTagsWhenNotPresent)
+        {
+            return;
+        }
+
+        ImportTagsWhenNotPresent = enabled;
+        SettingsModel.ImportTagsWhenNotPresent = enabled;
     }
 }

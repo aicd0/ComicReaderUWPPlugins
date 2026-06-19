@@ -10,12 +10,19 @@ namespace EHLinker.UI.Data;
 public static class SettingsModel
 {
     private const string KEY_AUTO_IMPORT_TAGS = "ImportTagsAutomatically";
+    private const string KEY_AUTO_IMPORT_TAGS_WHEN_NOT_PRESENT = "ImportTagsWhenNotPresent";
     private const string KEY_DISABLE_FILTERS = "DisableFilters";
 
     public static bool ImportTagsAutomatically
     {
         get => PluginService.Context.RegistryDatabase.CreateKey(PluginConstants.REGISTRY_SETTINGS).GetValueOrDefault(KEY_AUTO_IMPORT_TAGS, true);
         set => PluginService.Context.RegistryDatabase.CreateKey(PluginConstants.REGISTRY_SETTINGS).Set(KEY_AUTO_IMPORT_TAGS, value);
+    }
+
+    public static bool ImportTagsWhenNotPresent
+    {
+        get => PluginService.Context.RegistryDatabase.CreateKey(PluginConstants.REGISTRY_SETTINGS).GetValueOrDefault(KEY_AUTO_IMPORT_TAGS_WHEN_NOT_PRESENT, true);
+        set => PluginService.Context.RegistryDatabase.CreateKey(PluginConstants.REGISTRY_SETTINGS).Set(KEY_AUTO_IMPORT_TAGS_WHEN_NOT_PRESENT, value);
     }
 
     public static bool DisableFilters

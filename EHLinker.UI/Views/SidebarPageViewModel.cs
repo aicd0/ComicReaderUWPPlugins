@@ -461,29 +461,7 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
             return;
         }
 
-        if (SettingsModel.ImportTagsAutomatically)
-        {
-            const string tagPrefix = "EH_";
-            Dictionary<string, HashSet<string>> newTags = [];
-
-            IReadOnlyDictionary<string, IComicTagCategory> oldTags = comic.Tags;
-            foreach (KeyValuePair<string, IComicTagCategory> item in oldTags)
-            {
-                if (item.Key.StartsWith(tagPrefix))
-                {
-                    continue;
-                }
-
-                newTags[item.Key] = [.. item.Value.Tags];
-            }
-
-            foreach (KeyValuePair<string, IReadOnlySet<string>> item in comicInfo.Tags)
-            {
-                newTags[tagPrefix + item.Key] = [.. item.Value];
-            }
-
-            comic.SetTags(newTags);
-        }
+        ImportTags(comic, comicInfo);
 
         InfoTabRetryVisible = false;
         InfoTabContentVisible = true;
@@ -556,6 +534,43 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         }
 
         return link1;
+    }
+
+    private static void ImportTags(IComicModel comic, ComicDetailedInfo comicInfo)
+    {
+        if (!SettingsModel.ImportTagsAutomatically)
+        {
+            return;
+        }
+
+        const string tagPrefix = "EH_";
+
+        if (SettingsModel.ImportTagsWhenNotPresent)
+        {
+            bool tagsPresent = comic.Tags.Any(p => p.Key.StartsWith(tagPrefix));
+            if (tagsPresent)
+            {
+                return;
+            }
+        }
+
+        Dictionary<string, HashSet<string>> newTags = [];
+        foreach (KeyValuePair<string, IComicTagCategory> item in comic.Tags)
+        {
+            if (item.Key.StartsWith(tagPrefix))
+            {
+                continue;
+            }
+
+            newTags[item.Key] = [.. item.Value.Tags];
+        }
+
+        foreach (KeyValuePair<string, IReadOnlySet<string>> item in comicInfo.Tags)
+        {
+            newTags[tagPrefix + item.Key] = [.. item.Value];
+        }
+
+        comic.SetTags(newTags);
     }
 
     [GeneratedRegex(@"^\d{8}\s*-\s*(.+)$")]

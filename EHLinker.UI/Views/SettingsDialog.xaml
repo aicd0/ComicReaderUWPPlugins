@@ -7,11 +7,17 @@
     Title="EHLinker Settings"
     mc:Ignorable="d">
 
-    <StackPanel Width="600" Orientation="Vertical">
+    <StackPanel Width="400" Orientation="Vertical">
         <CheckBox
             Click="ImportTagsAutomaticallyCheckBox_Click"
             Content="Import tags automatically"
             IsChecked="{x:Bind ViewModel.ImportTagsAutomatically, Mode=OneWay}" />
+        <CheckBox
+            Margin="12,0,0,0"
+            Click="ImportTagsWhenNotPresentCheckBox_Click"
+            Content="Only when EH tags are not present"
+            IsChecked="{x:Bind ViewModel.ImportTagsWhenNotPresent, Mode=OneWay}"
+            IsEnabled="{x:Bind ViewModel.ImportTagsAutomatically, Mode=OneWay}" />
         <Button
             Margin="0,6,0,0"
             HorizontalAlignment="Stretch"
@@ -32,4 +38,3 @@
     </StackPanel>
 
 </ContentDialog>
-

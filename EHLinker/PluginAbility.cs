@@ -222,7 +222,8 @@ internal partial class PluginAbility : IPluginAbility
             HtmlNode contentNode = commentNode.SelectSingleNode(".//div[contains(@class,'c6')]");
             HtmlNode? scoreNode = commentNode.SelectSingleNode(".//span[starts-with(@id,'comment_score_')]");
 
-            string sender = infoNode.SelectSingleNode(".//a[contains(@href,'uploader')]").InnerText.Trim();
+            HtmlNode? senderNode = infoNode.SelectSingleNode(".//a[contains(@href,'uploader')]");
+            string sender = senderNode is null ? "(Disowned)" : senderNode.InnerText.Trim();
 
             string infoText = HtmlEntity.DeEntitize(infoNode.InnerText);
             Match dtMatch = COMMENT_DATE_REGEX().Match(infoText);

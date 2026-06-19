@@ -40,6 +40,12 @@ public sealed partial class SettingsDialog : ContentDialog
         ViewModel.SetImportTagsAutomatically(isChecked);
     }
 
+    private void ImportTagsWhenNotPresentCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        bool isChecked = ((CheckBox)sender).IsChecked == true;
+        ViewModel.SetImportTagsWhenNotPresent(isChecked);
+    }
+
     private void EditCookiesButton_Click(object sender, RoutedEventArgs e)
     {
         string cookieString = CookieManager.GetCookiesAsString();
