@@ -11,6 +11,8 @@ using ComicReaderUWP.SDK.Plugins.Comic;
 using ComicReaderUWP.SDK.Plugins.UI;
 using ComicReaderUWP.SDK.Plugins.UI.Menu;
 
+using Microsoft.UI.Xaml.Controls;
+
 namespace AutoScore;
 
 public partial class AutoScorePlugin : IPlugin
@@ -18,6 +20,10 @@ public partial class AutoScorePlugin : IPlugin
     string IPlugin.Name => "AutoScore";
 
     string IPlugin.Publisher => "aicd0";
+
+    string IPlugin.Description => "";
+
+    IconSource? IPlugin.Icon => null;
 
     string IPlugin.Version => "1.0";
 

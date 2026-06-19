@@ -9,9 +9,7 @@ using ComicReaderUWP.SDK.Plugins.UI;
 using EHLinker.UI;
 using EHLinker.UI.Views;
 
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace EHLinker;
 
@@ -22,6 +20,10 @@ public partial class EHLinkerPlugin : IPlugin
     string IPlugin.Name => "EHLinker";
 
     string IPlugin.Publisher => "aicd0";
+
+    string IPlugin.Description => "Retrieve comic information from E-Hentai.";
+
+    IconSource? IPlugin.Icon => CreatePluginIcon();
 
     string IPlugin.Version => "1.0";
 
@@ -34,17 +36,21 @@ public partial class EHLinkerPlugin : IPlugin
         context.RegisterSidebarPage(new SidebarPageProvider());
     }
 
+    private static BitmapIconSource CreatePluginIcon()
+    {
+        return new BitmapIconSource()
+        {
+            UriSource = new Uri($"ms-appx:///{PluginService.Context.ResourceFolderPath}/Assets/E-Hentai.png"),
+            ShowAsMonochrome = true,
+        };
+    }
+
     private class SidebarPageProvider : ISidebarPageProvider
     {
         public string Name => "EHLinker";
 
         public string Host => HOST_SIDEBAR_PAGE;
 
-        public IconElement Icon => new BitmapIcon()
-        {
-            UriSource = new Uri($"ms-appx:///{PluginService.Context.ResourceFolderPath}/Assets/E-Hentai.png"),
-            ShowAsMonochrome = true,
-            Foreground = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"],
-        };
+        IconSource ISidebarPageProvider.Icon => CreatePluginIcon();
     }
 }

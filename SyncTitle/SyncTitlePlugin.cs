@@ -26,6 +26,10 @@ public class SyncTitlePlugin : IPlugin
 
     string IPlugin.Publisher => "aicd0";
 
+    string IPlugin.Description => "";
+
+    IconSource? IPlugin.Icon => null;
+
     string IPlugin.Version => "1.0";
 
     void IPlugin.Initialize(IPluginContext context)
@@ -98,7 +102,7 @@ public class SyncTitlePlugin : IPlugin
                 .SetPrimaryButtonText("OK")
                 .SetSecondaryButtonText("Cancel")
                 .Build();
-            if ((await PluginService.PluginContext.EnqueueDialog(options)).Result != ContentDialogResult.Primary)
+            if ((await PluginService.PluginContext.EnqueueDialog(options)) != DialogResult.Primary)
             {
                 return;
             }

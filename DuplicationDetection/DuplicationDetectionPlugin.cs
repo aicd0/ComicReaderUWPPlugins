@@ -16,6 +16,8 @@ using ComicReaderUWP.SDK.Plugins.UI.Menu;
 
 using DuplicationDetection.Utils;
 
+using Microsoft.UI.Xaml.Controls;
+
 namespace DuplicationDetection;
 
 public class DuplicationDetectionPlugin : IPlugin
@@ -23,6 +25,10 @@ public class DuplicationDetectionPlugin : IPlugin
     string IPlugin.Name => "DuplicationDetection";
 
     string IPlugin.Publisher => "aicd0";
+
+    string IPlugin.Description => "";
+
+    IconSource? IPlugin.Icon => null;
 
     string IPlugin.Version => "1.0";
 

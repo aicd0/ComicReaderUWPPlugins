@@ -3,6 +3,8 @@
 
 using ComicReaderUWP.SDK.Plugins;
 
+using Microsoft.UI.Xaml.Controls;
+
 namespace SamplePlugin;
 
 public class SamplePlugin : IPlugin
@@ -12,6 +14,10 @@ public class SamplePlugin : IPlugin
     string IPlugin.Name => "SamplePlugin";
 
     string IPlugin.Publisher => "aicd0";
+
+    string IPlugin.Description => "This is a sample plugin.";
+
+    IconSource? IPlugin.Icon => new FontIconSource() { Glyph = "\uE74C" };
 
     string IPlugin.Version => "1.0";
 
