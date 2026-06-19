@@ -43,6 +43,12 @@
 			<FilesToZip Include="$(OutputPath)PluginMeta.json" />
 		</ItemGroup>
 		<Copy SourceFiles="@(FilesToZip)" DestinationFolder="$(ZipStagingDir)\%(RecursiveDir)" />
+
+		<ItemGroup>
+			<FilesToZip Remove="@(FilesToZip)" />
+			<FilesToZip Include="Assets\**\*" />
+		</ItemGroup>
+		<Copy SourceFiles="@(FilesToZip)" DestinationFolder="$(ZipStagingDir)\Assets\%(RecursiveDir)" />
 		
 		<ItemGroup>
 			<FilesToZip Remove="@(FilesToZip)" />

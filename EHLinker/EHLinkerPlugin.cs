@@ -1,13 +1,17 @@
 ﻿// Copyright (c) aicd0. All rights reserved.
 // Licensed under the MIT License.
 
+using System;
+
 using ComicReaderUWP.SDK.Plugins;
 using ComicReaderUWP.SDK.Plugins.UI;
 
 using EHLinker.UI;
 using EHLinker.UI.Views;
 
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace EHLinker;
 
@@ -36,6 +40,11 @@ public partial class EHLinkerPlugin : IPlugin
 
         public string Host => HOST_SIDEBAR_PAGE;
 
-        public IconElement Icon => new FontIcon() { Glyph = "\uE90A" };
+        public IconElement Icon => new BitmapIcon()
+        {
+            UriSource = new Uri($"ms-appx:///{PluginService.Context.ResourceFolderPath}/Assets/E-Hentai.png"),
+            ShowAsMonochrome = true,
+            Foreground = (Brush)Application.Current.Resources["TextFillColorPrimaryBrush"],
+        };
     }
 }
