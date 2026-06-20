@@ -150,6 +150,58 @@ internal partial class PluginAbility : IPluginAbility
             return comics;
         }
 
+        comicsNode = node1.SelectSingleNode("./table[@class='itg gltm']");
+        if (comicsNode is not null)
+        {
+            List<HtmlNode> itemNodes = [.. comicsNode.ChildNodes.Where(n => n.Name == "tr").Skip(1)];
+            foreach (HtmlNode itemNode in itemNodes)
+            {
+                HtmlNode gl3mNode = itemNode.SelectSingleNode("./td[@class='gl3m glname']/a");
+
+                string categoryText = itemNode.SelectSingleNode("./td[@class='gl1m glcat']/div").InnerText;
+                string link = gl3mNode.Attributes["href"].DeEntitizeValue;
+                string title = gl3mNode.SelectSingleNode("./div[@class='glink']").InnerText;
+
+                ComicBasicInfo comic = new()
+                {
+                    Title = title,
+                    Link = link,
+                    Category = ToComicCategory(categoryText),
+                    PageCount = 0,
+                };
+                comics.Add(comic);
+            }
+
+            return comics;
+        }
+
+        comicsNode = node1.SelectSingleNode("./table[@class='itg glte']");
+        if (comicsNode is not null)
+        {
+            List<HtmlNode> itemNodes = [.. comicsNode.ChildNodes.Where(n => n.Name == "tr")];
+            foreach (HtmlNode itemNode in itemNodes)
+            {
+                HtmlNode gl2eNode = itemNode.SelectSingleNode("./td[@class='gl2e']/div");
+                HtmlNode gl3eNode = gl2eNode.SelectSingleNode("./div[@class='gl3e']");
+
+                string categoryText = gl3eNode.SelectSingleNode("./div[1]").InnerText;
+                string pageCountText = gl3eNode.SelectSingleNode("./div[5]").InnerText;
+                string link = gl2eNode.SelectSingleNode("./a").Attributes["href"].DeEntitizeValue;
+                string title = gl2eNode.SelectSingleNode("./a/div/div[@class='glink']").InnerText;
+
+                ComicBasicInfo comic = new()
+                {
+                    Title = title,
+                    Link = link,
+                    Category = ToComicCategory(categoryText),
+                    PageCount = int.Parse(pageCountText[..^6]),
+                };
+                comics.Add(comic);
+            }
+
+            return comics;
+        }
+
         comicsNode = node1.SelectSingleNode("./div[@class='itg gld']");
         if (comicsNode is not null)
         {

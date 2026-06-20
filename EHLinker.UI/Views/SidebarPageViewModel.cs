@@ -364,7 +364,7 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
             _searchingArgs = null;
             _lastSearchResult = null;
             UpdateSearchResult();
-            ErrorDialogMessage = ex.Message;
+            ErrorDialogMessage = ex.ToString();
             return;
         }
 
@@ -394,7 +394,7 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
                 return;
             }
 
-            RequestInfoErrorMessage = ex.Message;
+            RequestInfoErrorMessage = ex.ToString();
             InfoTabRetryVisible = true;
             return;
         }

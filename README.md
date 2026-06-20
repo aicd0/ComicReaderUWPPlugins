@@ -26,7 +26,7 @@ To create a new plugin:
 - Add a new .NET Class Library project to the solution. Use your plugin name as the project name. Leave target .NET framework the default setting (we are going to change that later).
 - Assuming the name of your new plugin is `YourPlugin`. Copy everything from [SamplePlugin.csproj](SamplePlugin/SamplePlugin.csproj) to `YourPlugin\YourPlugin.csproj`. Replace text `SamplePlugin` with `YourPlugin`.
 - Copy [PluginMeta.json](SamplePlugin/PluginMeta.json) from `SamplePlugin\` to `YourPlugin\`. This file is essential for a plugin to work.
-- Now implementing the plugin: Create a new class `YourPlugin.cs` which implements `IPlugin` interface. Provide all information the interface needs, then implement your custom routine in `void Initialize(IPluginContext context)`. `Initialize` is the entry point for all plugins, performs any registrations here when the app launches. Take [SamplePlugin.json](SamplePlugin/SamplePlugin.cs) as an example:
+- Now implement plugin logic: Create a new class `YourPlugin.cs` which implements `IPlugin` interface. Provide all information the interface needs, then implement your custom initialization routine in `void Initialize(IPluginContext context)`. `Initialize` is the entry point for all plugins, it is automatically triggered when the app launches. Take [SamplePlugin.json](SamplePlugin/SamplePlugin.cs) as an example:
     ```
     public class SamplePlugin : IPlugin
     {
