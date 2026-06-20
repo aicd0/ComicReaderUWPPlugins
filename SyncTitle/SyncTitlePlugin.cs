@@ -30,7 +30,7 @@ public class SyncTitlePlugin : IPlugin
 
     IconSource? IPlugin.Icon => null;
 
-    string IPlugin.Version => "1.0";
+    string IPlugin.Version => "1.0.0";
 
     void IPlugin.Initialize(IPluginContext context)
     {

@@ -25,7 +25,7 @@ public partial class AutoScorePlugin : IPlugin
 
     IconSource? IPlugin.Icon => null;
 
-    string IPlugin.Version => "1.0";
+    string IPlugin.Version => "1.0.0";
 
     private readonly AutoScoreCore _core = new();
 
