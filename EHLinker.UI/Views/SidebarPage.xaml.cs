@@ -54,7 +54,7 @@ public sealed partial class SidebarPage : Page
         }
 
         _contentLoaded = true;
-        string resourceFolderPath = PluginService.Context.ResourceFolderPath;
+        string resourceFolderPath = PluginService.Context.PluginRootDirectoryPath;
         var resourceLocator = new System.Uri($"ms-appx:///{resourceFolderPath}/EHLinker.UI/Views/SidebarPage.xaml");
         Application.LoadComponent(this, resourceLocator, ComponentResourceLocation.Nested);
     }

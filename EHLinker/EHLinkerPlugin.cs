@@ -40,7 +40,7 @@ public partial class EHLinkerPlugin : IPlugin
     {
         return new BitmapIconSource()
         {
-            UriSource = new Uri($"ms-appx:///{PluginService.Context.ResourceFolderPath}/Assets/E-Hentai.png"),
+            UriSource = new Uri($"ms-appx:///{PluginService.Context.PluginRootDirectoryPath}/Assets/E-Hentai.png"),
             ShowAsMonochrome = true,
         };
     }

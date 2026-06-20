@@ -29,7 +29,7 @@ public sealed partial class SettingsDialog : ContentDialog
         }
 
         _contentLoaded = true;
-        string resourceFolderPath = PluginService.Context.ResourceFolderPath;
+        string resourceFolderPath = PluginService.Context.PluginRootDirectoryPath;
         var resourceLocator = new System.Uri($"ms-appx:///{resourceFolderPath}/EHLinker.UI/Views/SettingsDialog.xaml");
         Application.LoadComponent(this, resourceLocator, ComponentResourceLocation.Nested);
     }

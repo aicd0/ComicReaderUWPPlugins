@@ -31,7 +31,7 @@ public sealed partial class EditScoreDialog : ContentDialog
         }
 
         _contentLoaded = true;
-        string resourceFolderPath = PluginService.PluginContext.ResourceFolderPath;
+        string resourceFolderPath = PluginService.PluginContext.PluginRootDirectoryPath;
         var resourceLocator = new System.Uri($"ms-appx:///{resourceFolderPath}/AutoScore.UI/EditScoreDialog.xaml");
         Application.LoadComponent(this, resourceLocator, ComponentResourceLocation.Nested);
     }
