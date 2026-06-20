@@ -1,6 +1,6 @@
 # Comic Reader UWP Plugins
 
-This project contains plugins that can work with Comic Reader UWP. If you are simply looking for plugins to download, visit [Releases](https://github.com/aicd0/ComicReaderUWPPlugins/releases) page. If you are a plugin developer looking for instructions, see [Development](#Development) section.
+This project contains plugins that can work with [Comic Reader UWP](https://github.com/aicd0/ComicReaderUWP). If you are simply looking for plugins to download, visit [Releases](https://github.com/aicd0/ComicReaderUWPPlugins/releases) page. If you are a plugin developer looking for instructions, see [Development](#Development) section.
 
 ## Plugin list
 
