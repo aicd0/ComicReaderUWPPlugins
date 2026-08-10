@@ -60,7 +60,7 @@ internal class AutoScoreCore
         if (scoreModel is null || !scoreModel.IsRated)
         {
             await comic.SetRating(-1);
-            await comic.SetCompletionStatus(CompletionStatusEnum.NotStarted);
+            await comic.SetCompletionStatus(CompletionStatusEnum.Unread);
             return;
         }
 

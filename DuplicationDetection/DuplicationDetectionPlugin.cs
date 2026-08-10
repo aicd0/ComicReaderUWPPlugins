@@ -30,7 +30,7 @@ public class DuplicationDetectionPlugin : IPlugin
 
     IconSource? IPlugin.Icon => null;
 
-    string IPlugin.Version => "1.0.0";
+    string IPlugin.Version => "1.1.0";
 
     void IPlugin.Initialize(IPluginContext context)
     {
@@ -80,7 +80,7 @@ public class DuplicationDetectionPlugin : IPlugin
                 continue;
             }
 
-            using Stream? imageStream = connection.OpenImageStream(i);
+            using Stream? imageStream = await connection.OpenImageStream(i);
             if (imageStream is null)
             {
                 errorImages.Add(imageModel);
