@@ -75,6 +75,11 @@ public sealed partial class SettingsDialog : ContentDialog
         PluginService.Ability.SetCookies(CookieManager.GetCookies());
     }
 
+    private void ClearCacheButton_Click(object sender, RoutedEventArgs e)
+    {
+        PluginService.Ability.ClearCache();
+    }
+
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
         Hide();

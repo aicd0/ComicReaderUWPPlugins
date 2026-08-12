@@ -3,12 +3,19 @@
     x:Class="EHLinker.UI.Views.SidebarPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:EHLinker.UI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:EHLinker.UI.ViewModels"
     Loaded="Page_Loaded"
     Unloaded="Page_Unloaded"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter" />
+        </ResourceDictionary>
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -158,6 +165,12 @@
                     VerticalScrollBarVisibility="Auto"
                     Visibility="{x:Bind ViewModel.InfoTabContentVisible, Mode=OneWay}">
                     <StackPanel Orientation="Vertical">
+                        <TextBlock
+                            Margin="0,10,0,0"
+                            FontWeight="SemiLight"
+                            Text="{x:Bind ViewModel.SnapshotInfoText, Mode=OneWay}"
+                            TextWrapping="Wrap"
+                            Visibility="{x:Bind ViewModel.SnapshotInfoText, Mode=OneWay, Converter={StaticResource StringToVisibilityConverter}}" />
                         <TextBlock
                             Margin="0,10,0,0"
                             FontSize="20"

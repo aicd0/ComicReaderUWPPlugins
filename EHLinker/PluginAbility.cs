@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 using EHLinker.UI;
@@ -17,7 +19,7 @@ namespace EHLinker;
 
 internal partial class PluginAbility : IPluginAbility
 {
-    private readonly object _clientLock = new();
+    private readonly Lock _clientLock = new();
     private ClassicHttpClient? _client;
 
     public IReadOnlyDictionary<string, string> GetCookies()
@@ -57,7 +59,29 @@ internal partial class PluginAbility : IPluginAbility
     {
         ClassicHttpClient client = GetClient();
         string html = await client.GetHtmlAsync(link);
+
+        byte[] linkHash = SHA256.HashData(Encoding.UTF8.GetBytes(link));
+        string key = Convert.ToHexString(linkHash)[..16];
+        PluginService.Context.RegistryDatabase.CreateKey(PluginConstants.REGISTRY_COMIC_INFO_CACHE).Set(key, html);
+
         return ParseComicInfo(html);
+    }
+
+    public async Task<ComicDetailedInfo?> RequestComicInfoFromCache(string link)
+    {
+        byte[] linkHash = SHA256.HashData(Encoding.UTF8.GetBytes(link));
+        string key = Convert.ToHexString(linkHash)[..16];
+        if (!PluginService.Context.RegistryDatabase.CreateKey(PluginConstants.REGISTRY_COMIC_INFO_CACHE).TryGet(key, out string? html))
+        {
+            return null;
+        }
+
+        return ParseComicInfo(html);
+    }
+
+    public void ClearCache()
+    {
+        PluginService.Context.RegistryDatabase.RemoveKey(PluginConstants.REGISTRY_CACHE);
     }
 
     private ClassicHttpClient GetClient()

@@ -23,6 +23,11 @@
             HorizontalAlignment="Stretch"
             Click="EditCookiesButton_Click"
             Content="Edit cookies..." />
+        <Button
+            Margin="0,6,0,0"
+            HorizontalAlignment="Stretch"
+            Click="ClearCacheButton_Click"
+            Content="Clear cache" />
         <Grid Margin="0,15,0,0" HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

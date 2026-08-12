@@ -19,4 +19,8 @@ public interface IPluginAbility
     Task<ComicSearchResult> SearchComicsByLink(string link);
 
     Task<ComicDetailedInfo> RequestComicInfo(string link);
+
+    Task<ComicDetailedInfo?> RequestComicInfoFromCache(string link);
+
+    void ClearCache();
 }

@@ -142,6 +142,17 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         }
     }
 
+    private string _snapshotInfoText = string.Empty;
+    public string SnapshotInfoText
+    {
+        get => _snapshotInfoText;
+        set
+        {
+            _snapshotInfoText = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SnapshotInfoText)));
+        }
+    }
+
     private string _comicTitle1 = string.Empty;
     public string ComicTitle1
     {
@@ -182,7 +193,6 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
     // Comic Link
     private IComicModel? _comic;
     private string? _link;
-    private ComicDetailedInfo? _comicInfo;
 
     public void LoadComic(IComicModel? comic)
     {
@@ -357,8 +367,7 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         {
             if (args != _searchingArgs)
             {
-                // Out-of-date
-                return;
+                return; // Out-of-date
             }
 
             _searchingArgs = null;
@@ -370,8 +379,7 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
 
         if (args != _searchingArgs)
         {
-            // Out-of-date
-            return;
+            return; // Out-of-date
         }
 
         _searchingArgs = null;
@@ -381,33 +389,47 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
 
     private async Task RequestComicInfo(IComicModel comic, string link)
     {
-        ComicDetailedInfo comicInfo;
+        ComicDetailedInfo? comicInfo = await PluginService.Ability.RequestComicInfoFromCache(link);
+
+        if (comic != _comic)
+        {
+            return; // Out-of-date
+        }
+
+        if (comicInfo is not null)
+        {
+            SelectedTabIndex = 1;
+            UpdateComicInfo(comicInfo, fromCache: true);
+        }
+
         try
         {
             comicInfo = await PluginService.Ability.RequestComicInfo(link);
         }
         catch (Exception ex)
         {
-            if (comic != _comic || _comicInfo is not null)
+            if (comic != _comic)
             {
-                // Out-of-date
-                return;
+                return; // Out-of-date
             }
 
-            RequestInfoErrorMessage = ex.Message;
-            InfoTabRetryVisible = true;
+            if (comicInfo is null)
+            {
+                RequestInfoErrorMessage = ex.Message;
+                InfoTabRetryVisible = true;
+                InfoTabContentVisible = false;
+            }
+
             return;
         }
 
-        if (comic != _comic || _comicInfo is not null)
+        if (comic != _comic)
         {
-            // Out-of-date
-            return;
+            return; // Out-of-date
         }
 
-        _comicInfo = comicInfo;
         SelectedTabIndex = 1;
-        UpdateComicInfo(comicInfo);
+        UpdateComicInfo(comicInfo, fromCache: false);
     }
 
     private void UpdateLinkStatus()
@@ -453,7 +475,7 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
         }
     }
 
-    private void UpdateComicInfo(ComicDetailedInfo comicInfo)
+    private void UpdateComicInfo(ComicDetailedInfo comicInfo, bool fromCache)
     {
         IComicModel? comic = _comic;
         if (comic is null)
@@ -465,6 +487,8 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
 
         InfoTabRetryVisible = false;
         InfoTabContentVisible = true;
+
+        SnapshotInfoText = fromCache ? $"This is a cached page." : string.Empty;
         ComicTitle1 = comicInfo.Title1;
         ComicTitle2 = comicInfo.Title2;
 
@@ -477,7 +501,7 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
             {
                 Sender = comment.Sender,
                 Content = comment.Content,
-                Detail = $"{voteText} | {postTimeText}",
+                Detail = $"{voteText} {postTimeText}",
             });
         }
     }
@@ -492,7 +516,6 @@ internal partial class SidebarPageViewModel : INotifyPropertyChanged
 
     private void ClearComicInfo()
     {
-        _comicInfo = null;
         InfoTabContentVisible = false;
         InfoTabRetryVisible = false;
         ComicTitle1 = string.Empty;
