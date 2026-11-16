@@ -25,7 +25,7 @@ public partial class EHLinkerPlugin : IPlugin
 
     IconSource? IPlugin.Icon => CreatePluginIcon();
 
-    string IPlugin.Version => "1.1.1";
+    string IPlugin.Version => "1.1.2";
 
     void IPlugin.Initialize(IPluginContext context)
     {

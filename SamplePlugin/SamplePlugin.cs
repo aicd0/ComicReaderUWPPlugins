@@ -19,7 +19,7 @@ public class SamplePlugin : IPlugin
 
     IconSource? IPlugin.Icon => new FontIconSource() { Glyph = "\uE74C" };
 
-    string IPlugin.Version => "1.1.0";
+    string IPlugin.Version => "1.1.2";
 
     void IPlugin.Initialize(IPluginContext context)
     {
