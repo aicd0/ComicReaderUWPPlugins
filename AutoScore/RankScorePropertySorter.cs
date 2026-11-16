@@ -52,13 +52,13 @@ internal class RankScorePropertySorter<A> : IVirtualPropertySorter<IComicModel> 
     {
         if (!_comicInfoMap.TryGetValue(item, out ComicInfo? info))
         {
-            return ["Ungrouped"];
+            return (string[])["Ungrouped"];
         }
 
         int rankGroup = (info.Rank - 1) / 20;
         int minRank = rankGroup * 20 + 1;
         int maxRank = rankGroup * 20 + 20;
-        return [$"{minRank} ~ {maxRank}"];
+        return (string[])[$"{minRank} ~ {maxRank}"];
     }
 
     public IEnumerable<T> SortGroups<T>(IEnumerable<T> items) where T : IItemGroup<IComicModel>

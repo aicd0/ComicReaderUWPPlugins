@@ -167,7 +167,7 @@ public class SyncTitlePlugin : IPlugin
     {
         public IEnumerable<IMenuItem> CreateMenuItems(IWindowContext windowContext)
         {
-            return [
+            return (IMenuItem[])[
                 new SimpleMenuItem()
                 {
                     Text = "Sync titles",

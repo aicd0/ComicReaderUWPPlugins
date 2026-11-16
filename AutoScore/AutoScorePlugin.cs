@@ -45,7 +45,7 @@ public partial class AutoScorePlugin : IPlugin
     {
         public IEnumerable<IMenuItem> CreateMenuItems(IWindowContext windowContext)
         {
-            return [
+            return (IMenuItem[])[
                 new SimpleMenuItem()
                 {
                     Text = "Update scores",
@@ -59,7 +59,7 @@ public partial class AutoScorePlugin : IPlugin
     {
         public IEnumerable<IMenuItem> CreateMenuItems(IWindowContext windowContext, IComicModel primary, IEnumerable<IComicModel> selection)
         {
-            return [
+            return (IMenuItem[])[
                 new SimpleMenuItem()
                 {
                     Text = "Edit score",

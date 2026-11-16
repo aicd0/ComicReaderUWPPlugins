@@ -182,7 +182,7 @@ public class DuplicationDetectionPlugin : IPlugin
     {
         public IEnumerable<IMenuItem> CreateMenuItems(IWindowContext windowContext, IComicModel primary, IEnumerable<IComicModel> selection)
         {
-            return [
+            return (IMenuItem[])[
                 new SimpleMenuItem()
                 {
                     Text = "Detect duplication",
