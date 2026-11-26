@@ -30,7 +30,7 @@ public class DuplicationDetectionPlugin : IPlugin
 
     IconSource? IPlugin.Icon => null;
 
-    string IPlugin.Version => "1.1.2";
+    string IPlugin.Version => "1.2.0";
 
     void IPlugin.Initialize(IPluginContext context)
     {
