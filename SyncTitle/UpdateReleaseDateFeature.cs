@@ -37,10 +37,7 @@ internal class UpdateReleaseDateFeature
                 continue;
             }
 
-            if (!DateTime.TryParseExact(match.Groups[1].Value, "yyyyMMdd", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime releaseDate))
-            {
-                continue;
-            }
+            DateTime releaseDate = ClampToValidDate(match.Groups[1].Value);
 
             string newTitle = match.Groups[2].Value.Trim();
             if (string.IsNullOrEmpty(newTitle))
@@ -114,5 +111,19 @@ internal class UpdateReleaseDateFeature
                 .Build();
             await PluginService.PluginContext.EnqueueDialog(failedOptions);
         }
+    }
+
+    private static DateTime ClampToValidDate(string value)
+    {
+        // Out-of-range components are clamped to the nearest valid date, e.g. 20160099 => 2016/01/31.
+        int year = int.Parse(value[..4], CultureInfo.InvariantCulture);
+        int month = int.Parse(value[4..6], CultureInfo.InvariantCulture);
+        int day = int.Parse(value[6..8], CultureInfo.InvariantCulture);
+
+        year = Math.Clamp(year, DateTime.MinValue.Year, DateTime.MaxValue.Year);
+        month = Math.Clamp(month, 1, 12);
+        day = Math.Clamp(day, 1, DateTime.DaysInMonth(year, month));
+
+        return new DateTime(year, month, day);
     }
 }
